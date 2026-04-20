@@ -1,17 +1,17 @@
 <template>
   <div class="body">
     <main>
-      <DTR />
+      <EmployeeTable />
     </main>
   </div>
 </template>
 
 <script>
-import DTR from "@/components/Dtr/DTR";
+import EmployeeTable from "@/components/Employees/EmployeeTable";
 export default {
   // middleware: "pageValidator",
   components: {
-    DTR,
+    EmployeeTable,
   },
   head() {
     return {

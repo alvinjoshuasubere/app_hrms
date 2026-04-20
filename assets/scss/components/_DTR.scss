@@ -119,11 +119,7 @@
   transition: all 0.3s ease;
   overflow: hidden;
   
-  &:hover {
-    box-shadow: var(--form-hover-shadow);
-    border-color: var(--border-focus);
-    transform: translateY(-2px);
-  }
+  
   
   .employee-header {
     .employee-avatar {
@@ -483,3 +479,15 @@
   transform: translateY(-1px);
   box-shadow: var(--form-shadow);
 }
+.page-item.active .page-link {
+  background-color: var(--transPrimary) !important;
+  border-color: var(--transPrimary) !important;
+  transition: background-color 0.3s;
+  &:focus {
+    box-shadow: 0 0 0 0.2rem #1b1b1b !important;
+  }
+}
+.page-item .page-link {
+  color: black;
+}
+

@@ -15,13 +15,13 @@ export default {
   },
   head() {
     return {
-      meta: [
-        {
-          hid: "description",
-          name: "description",
-          content: "DTR",
-        },
-      ],
+      // meta: [
+      //   {
+      //     hid: "description",
+      //     name: "description",
+      //     content: "DTR",
+      //   },
+      // ],
     };
   },
   data() {

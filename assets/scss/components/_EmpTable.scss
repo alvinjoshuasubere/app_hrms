@@ -1,0 +1,223 @@
+.mainContainer {
+  display: block;
+  padding: 3rem 0 0 15rem;
+  transition: all 200ms ease;
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: row;
+  margin: 1.5rem;
+  width: auto;
+  background-color: white;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 0.25rem;
+  border-color: rgba(212, 210, 210, 0.486);
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px,
+    rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
+}
+
+// Modern Modal Styles
+.modal-title-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.modal-title-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--primary-hover)
+  );
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modal-title-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.modal-title-main {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  font-family: font_B;
+}
+
+.modal-title-desc {
+  font-size: 0.875rem;
+  color: white;
+  font-weight: 400;
+}
+
+.hrmsColor {
+  background: #003a92;
+  color: white;
+  border: none;
+}
+.id-card-wrapper {
+  position: relative;
+  width: 100%;
+  /* maintain the card's aspect ratio */
+  aspect-ratio: 630 / 840;
+  max-width: 480px;
+  margin: 0 auto;
+  font-family: "Tahoma", "Gilroy", sans-serif;
+  overflow: hidden;
+  background: #fff;
+}
+
+.id-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* ── Vertical POSITION label on the right ── */
+/* Matches the pink rotated "CITY MAYOR" text in the sample */
+.id-position-vertical {
+  position: absolute;
+  top: 8%;
+  right: 2%;
+  z-index: 2;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: clamp(14px, 2.5vw, 22px);
+  font-weight: 900;
+  color: white;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-family: Gilroy;
+  line-height: 1;
+  -webkit-text-stroke: 1px black;
+  text-shadow: -126px 0px 0px #000000;
+  text-align: center;
+  max-width: 1ch;
+  overflow-wrap: break-word;
+  word-break: break-all;
+}
+
+/* ── Nickname — large bold white text ── */
+/* Positioned in the upper-left area, below the seal */
+.id-nickname {
+  position: absolute;
+  top: 30%;
+  left: 14%;
+  z-index: 2;
+  font-size: clamp(22px, 4.5vw, 40px);
+  font-weight: 900;
+  color: #ffffff;
+  text-transform: uppercase;
+  font-family: Gilroy;
+  letter-spacing: 1px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  line-height: 1;
+  max-width: 65%;
+}
+
+/* ── Full name — smaller white text below nickname ── */
+.id-fullname {
+  position: absolute;
+  top: 38%;
+  left: 5%;
+  z-index: 2;
+  font-size: clamp(10px, 1.8vw, 16px);
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  font-family: Tahomma;
+  letter-spacing: 1.5px;
+  max-width: 60%;
+}
+
+/* ── Office text — overlaid on the black bar ── */
+.id-office {
+  position: absolute;
+  top: 50%;
+  left: 4%;
+  z-index: 2;
+  font-size: clamp(10px, 1.8vw, 15px);
+  font-weight: 700;
+  color: #ffffff;
+  font-family: Gilroy;
+  text-transform: uppercase;
+  font-family: Gilroy;
+  letter-spacing: 1px;
+  max-width: 62%;
+}
+
+/* ── QR code block — bottom left of lower white section ── */
+.id-qr {
+  position: absolute;
+  bottom: 14%;
+  left: 5%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.id-qr-img {
+  width: clamp(70px, 14%, 100px);
+  height: auto;
+  display: block;
+}
+
+.id-cgk {
+  font-size: clamp(9px, 1.4vw, 12px);
+  font-weight: 600;
+  color: #333;
+  font-family: Gilroy;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+/* ── Employee photo — bottom right, overlapping the divider ── */
+/* Matches the cutout photo style in the sample */
+.id-photo {
+  position: absolute;
+  bottom: 0;
+  right: 2%;
+  z-index: 3;
+  width: 42%;
+  /* photo extends from roughly mid-card down to bottom */
+  height: 52%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.id-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.id-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+}
