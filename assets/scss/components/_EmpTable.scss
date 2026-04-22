@@ -89,6 +89,20 @@
   z-index: 0;
 }
 
+.tableButton {
+  padding: 0px 5px;
+  border-radius: 60% !important;
+  width: 30px !important;
+  height: 30px !important;
+  border-style: solid;
+  .tableIcon {
+    color: white;
+  }
+  &:focus {
+    box-shadow: 0 0 0 0.2rem #8797a6 !important;
+  }
+}
+
 /* ── Vertical POSITION label on the right ── */
 /* Matches the pink rotated "CITY MAYOR" text in the sample */
 .id-position-vertical {
