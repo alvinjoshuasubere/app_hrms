@@ -99,6 +99,29 @@
                   </div>
                 </b-form-group>
               </b-col>
+              <b-col cols="2">
+                <b-form-group>
+                  <b-dropdown size="sm" variant="outline-secondary" text="Status" class="employment-status-dropdown">
+                    <b-dropdown-form style="max-height: 200px; overflow-y: auto;">
+                      <b-form-checkbox
+                        v-for="status in employmentStatusOptions"
+                        :key="status"
+                        v-model="selectedEmploymentStatuses"
+                        :value="status"
+                        @change="onEmploymentStatusChange"
+                        class="emp-status-checkbox"
+                      >
+                        {{ status }}
+                      </b-form-checkbox>
+                    </b-dropdown-form>
+                  </b-dropdown>
+                  <div v-if="selectedEmploymentStatuses.length > 0" class="selected-employment-statuses mt-1">
+                    <small class="text-muted">
+                      Selected: {{ selectedEmploymentStatuses.join(', ') }}
+                    </small>
+                  </div>
+                </b-form-group>
+              </b-col>
             </b-row>
 
             <!-- Select All Controls -->
@@ -139,6 +162,7 @@
               </b-col>
             </b-row>
 
+            
             <b-table
               head-variant="light"
               style="font-size: 12px"
@@ -338,227 +362,374 @@
 
     <!-- Employee Details Modal -->
     <b-modal
-      header-class="hrmsColor"
       v-model="showEmployeeModal"
+      modal-class="emp-staff-modal-root"
+      header-class="emp-staff-modal-header"
       size="xl"
+      dialog-class="emp-staff-modal-dialog"
+      content-class="emp-staff-modal-content"
       hide-footer
       scrollable
-      centered
       no-close-on-backdrop
       body-class="p-0"
     >
       <template #modal-title>
-        <div style="display: flex; align-items: center; gap: 10px">
-          <font-awesome-icon icon="id-card" style="font-size: 15px" />
-          <span style="font-size: 14px; font-weight: 600"
-            >Employee Details</span
-          >
+        <div class="emp-staff-modal-title">
+          <font-awesome-icon icon="id-card" />
+          <span>Staff detail</span>
         </div>
       </template>
 
-      <div v-if="employeeDetails">
-        <!-- Profile Header -->
-        <div class="emp-profile">
-          <div class="emp-profile-header">
-            <div class="emp-profile-avatar">
-              <img
-                v-if="employeeDetails.photo_url"
-                :src="employeeDetails.photo_url"
-                :alt="employeeDetails.fullname"
-                @error="handleAvatarError"
-              />
-              <div v-else>
-                {{ getInitials(employeeDetails.fullname) }}
-              </div>
-            </div>
-            <div class="emp-profile-info">
-              <div class="emp-profile-name">{{ employeeDetails.fullname }}</div>
-              <div class="emp-profile-subtitle">
-                {{ employeeDetails.deptdesc }} · {{ employeeDetails.position_desc }}
-              </div>
-              <div class="emp-profile-status" :class="!employeeDetails.isseparated ? 'active' : 'separated'">
-                {{ !employeeDetails.isseparated ? 'Active Employee' : 'Separated' }}
-              </div>
+      <div v-if="employeeDetails" class="emp-staff-modal text-left">
+        <!-- Summary card (hrment-style) -->
+        <div class="emp-staff-summary-card">
+          <div class="emp-staff-summary-avatar">
+            <img
+              v-if="employeeDetails.photo_url && !profilePhotoFailed"
+              :src="employeeDetails.photo_url"
+              :alt="employeeDetails.fullname"
+              @error="profilePhotoFailed = true"
+            />
+            <div v-else class="emp-staff-summary-initials">
+              {{ getInitials(employeeDetails.fullname) }}
             </div>
           </div>
-          
-          <!-- Profile Stats -->
-          <div class="emp-profile-stats">
-            <div class="emp-profile-stat">
-              <div class="emp-profile-stat-value">{{ getAge(employeeDetails.birthdate) || 'â' }}</div>
-              <div class="emp-profile-stat-label">Age</div>
-            </div>
-            <div class="emp-profile-stat">
-              <div class="emp-profile-stat-value">{{ getYearsOfService(employeeDetails.datehired) || 'â' }}</div>
-              <div class="emp-profile-stat-label">Years of Service</div>
-            </div>
-            <div class="emp-profile-stat">
-              <div class="emp-profile-stat-value">{{ employeeDetails.empno }}</div>
-              <div class="emp-profile-stat-label">Employee ID</div>
+          <div class="emp-staff-summary-main">
+            <h1 class="emp-staff-summary-name">{{ employeeDetails.fullname }}</h1>
+            <p class="emp-staff-summary-role">
+              {{ employeeDetails.position_desc }} | {{ employeeDetails.deptdesc }}
+            </p>
+            <span
+              class="emp-staff-summary-status"
+              :class="!employeeDetails.isseparated ? 'is-active' : 'is-separated'"
+            >
+              {{ !employeeDetails.isseparated ? "Active" : "Separated" }}
+            </span>
+          </div>
+          <div class="emp-staff-summary-meta">
+            <div class="emp-staff-meta-grid">
+              <div class="emp-staff-meta-block">
+                <span class="emp-staff-meta-label">Employee ID</span>
+                <span class="emp-staff-meta-value">{{ employeeDetails.empno }}</span>
+              </div>
+              <div class="emp-staff-meta-block">
+                <span class="emp-staff-meta-label">Account</span>
+                <span class="emp-staff-meta-value">{{ employeeDetails.email || "—" }}</span>
+              </div>
+              <div class="emp-staff-meta-block">
+                <span class="emp-staff-meta-label">Phone number</span>
+                <span class="emp-staff-meta-value">{{ employeeDetails.cell_no || "—" }}</span>
+              </div>
+              <div class="emp-staff-meta-block">
+                <span class="emp-staff-meta-label">Email</span>
+                <span class="emp-staff-meta-value">{{ employeeDetails.email || "—" }}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Profile Content -->
-        <div class="emp-profile-content">
-          <!-- Basic Info Section -->
-          <div class="emp-profile-section">
-            <div class="emp-profile-section-header">
-              <div class="emp-profile-section-icon basic">
-                <font-awesome-icon icon="user" />
+        <nav class="emp-staff-tabs" aria-label="Profile sections">
+          <button
+            type="button"
+            class="emp-staff-tab"
+            :class="{ 'emp-staff-tab--active': employeeDetailTab === 0 }"
+            @click="employeeDetailTab = 0"
+          >
+            Staff profile
+          </button>
+          <button
+            type="button"
+            class="emp-staff-tab"
+            :class="{ 'emp-staff-tab--active': employeeDetailTab === 1 }"
+            @click="employeeDetailTab = 1"
+          >
+            Work information
+          </button>
+          <button
+            type="button"
+            class="emp-staff-tab"
+            :class="{ 'emp-staff-tab--active': employeeDetailTab === 2 }"
+            @click="employeeDetailTab = 2"
+          >
+            Contact &amp; IDs
+          </button>
+        </nav>
+
+        <div class="emp-staff-panel-wrap">
+          <!-- Tab: Staff profile -->
+          <div v-show="employeeDetailTab === 0" class="emp-staff-layout">
+            <div class="emp-staff-col emp-staff-col--main">
+              <div class="emp-staff-card">
+                <div class="emp-staff-card-head">
+                  <h3>Personal information</h3>
+                </div>
+                <div class="emp-staff-card-body">
+                  <div class="emp-staff-kv-grid">
+                    <div class="emp-staff-kv">
+                      <span class="emp-staff-kv-label">Gender</span>
+                      <span class="emp-staff-kv-value">{{ employeeDetails.genderdesc || "—" }}</span>
+                    </div>
+                    <div class="emp-staff-kv">
+                      <span class="emp-staff-kv-label">Date of birth</span>
+                      <span class="emp-staff-kv-value">{{ formatDate(employeeDetails.birthdate) || "—" }}</span>
+                    </div>
+                    <div class="emp-staff-kv">
+                      <span class="emp-staff-kv-label">Birth place</span>
+                      <span class="emp-staff-kv-value">{{ employeeDetails.birthplace || "—" }}</span>
+                    </div>
+                    <div class="emp-staff-kv">
+                      <span class="emp-staff-kv-label">Civil status</span>
+                      <span class="emp-staff-kv-value">{{ employeeDetails.civilstatusdesc || "—" }}</span>
+                    </div>
+                    <div class="emp-staff-kv">
+                      <span class="emp-staff-kv-label">Citizenship</span>
+                      <span class="emp-staff-kv-value">{{ employeeDetails.citizenshipdesc || "—" }}</span>
+                    </div>
+                    <div class="emp-staff-kv">
+                      <span class="emp-staff-kv-label">Age</span>
+                      <span class="emp-staff-kv-value">{{ getAge(employeeDetails.birthdate) }}</span>
+                    </div>
+                  </div>
+                  <div class="emp-staff-kv-full">
+                    <span class="emp-staff-kv-label">Permanent address</span>
+                    <span class="emp-staff-kv-value">{{ formatCompleteAddress() || "—" }}</span>
+                  </div>
+                </div>
               </div>
-              <div class="emp-profile-section-title">Basic Information</div>
             </div>
-            <div class="emp-profile-section-content">
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Employee ID</div>
-                <div class="emp-profile-item-value">{{ employeeDetails.empno }}</div>
+            <div class="emp-staff-col emp-staff-col--side">
+              <div class="emp-staff-card">
+                <div class="emp-staff-card-head">
+                  <h3>Employment</h3>
+                </div>
+                <div class="emp-staff-card-body emp-staff-card-body--stack">
+                  <div class="emp-staff-kv">
+                    <span class="emp-staff-kv-label">Date hired</span>
+                    <span class="emp-staff-kv-value">{{ formatDate(employeeDetails.datehired) || "—" }}</span>
+                  </div>
+                  <div class="emp-staff-kv">
+                    <span class="emp-staff-kv-label">Years of service</span>
+                    <span class="emp-staff-kv-value">{{ getYearsOfService(employeeDetails.datehired) }}</span>
+                  </div>
+                  <div class="emp-staff-kv">
+                    <span class="emp-staff-kv-label">Regularized</span>
+                    <span class="emp-staff-kv-value">{{ formatDate(employeeDetails.regularized) || "—" }}</span>
+                  </div>
+                  <div class="emp-staff-kv">
+                    <span class="emp-staff-kv-label">Separated</span>
+                    <span class="emp-staff-kv-value">{{ formatDate(employeeDetails.separated) || "—" }}</span>
+                  </div>
+                </div>
               </div>
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Department</div>
-                <div class="emp-profile-item-value">{{ employeeDetails.deptdesc }}</div>
-              </div>
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Position</div>
-                <div class="emp-profile-item-value">{{ employeeDetails.position_desc }}</div>
-              </div>
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Status</div>
-                <div class="emp-profile-item-value" :class="!employeeDetails.isseparated ? 'status-active' : 'status-separated'">
-                  {{ !employeeDetails.isseparated ? 'Active' : 'Separated' }}
+              <div class="emp-staff-card">
+                <div class="emp-staff-card-head">
+                  <h3>Organization</h3>
+                </div>
+                <div class="emp-staff-card-body emp-staff-card-body--stack">
+                  <div class="emp-staff-kv">
+                    <span class="emp-staff-kv-label">Department</span>
+                    <span class="emp-staff-kv-value">{{ employeeDetails.deptdesc || "—" }}</span>
+                  </div>
+                  <div class="emp-staff-kv">
+                    <span class="emp-staff-kv-label">Position</span>
+                    <span class="emp-staff-kv-value">{{ employeeDetails.position_desc || "—" }}</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Personal Info Section -->
-          <div class="emp-profile-section">
-            <div class="emp-profile-section-header">
-              <div class="emp-profile-section-icon personal">
-                <font-awesome-icon icon="calendar" />
+          <!-- Tab: Work information -->
+          <div v-show="employeeDetailTab === 1" class="emp-staff-layout emp-staff-layout--stack">
+            <div class="emp-staff-card">
+              <div class="emp-staff-card-head">
+                <h3>Work information</h3>
               </div>
-              <div class="emp-profile-section-title">Personal Information</div>
-            </div>
-            <div class="emp-profile-section-content">
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Birth Date</div>
-                <div class="emp-profile-item-value">{{ formatDate(employeeDetails.birthdate) }}</div>
-              </div>
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Birth Place</div>
-                <div class="emp-profile-item-value">{{ employeeDetails.birthplace }}</div>
-              </div>
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Age</div>
-                <div class="emp-profile-item-value">{{ getAge(employeeDetails.birthdate) }}</div>
-              </div>
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Gender</div>
-                <div class="emp-profile-item-value">{{ employeeDetails.genderdesc }}</div>
-              </div>
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Civil Status</div>
-                <div class="emp-profile-item-value">{{ employeeDetails.civilstatusdesc }}</div>
-              </div>
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Citizenship</div>
-                <div class="emp-profile-item-value">{{ employeeDetails.citizenshipdesc }}</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Government IDs Section -->
-          <div class="emp-profile-section">
-            <div class="emp-profile-section-header">
-              <div class="emp-profile-section-icon government">
-                <font-awesome-icon icon="id-card" />
-              </div>
-              <div class="emp-profile-section-title">Government IDs</div>
-            </div>
-            <div class="emp-profile-section-content">
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">TIN</div>
-                <div class="emp-profile-item-value">{{ employeeDetails.tin }}</div>
-              </div>
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">PhilHealth</div>
-                <div class="emp-profile-item-value">{{ employeeDetails.philhealth_no }}</div>
-              </div>
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">SSS</div>
-                <div class="emp-profile-item-value">{{ employeeDetails.sss_no }}</div>
-              </div>
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">GSIS</div>
-                <div class="emp-profile-item-value">{{ employeeDetails.sss_gsis_no }}</div>
+              <div class="emp-staff-card-body">
+                <div class="emp-staff-kv-grid emp-staff-kv-grid--wide">
+                  <div class="emp-staff-kv">
+                    <span class="emp-staff-kv-label">Employee ID</span>
+                    <span class="emp-staff-kv-value">{{ employeeDetails.empno }}</span>
+                  </div>
+                  <div class="emp-staff-kv">
+                    <span class="emp-staff-kv-label">Status</span>
+                    <span
+                      class="emp-staff-kv-value"
+                      :class="!employeeDetails.isseparated ? 'emp-staff-text-success' : 'emp-staff-text-danger'"
+                    >
+                      {{ !employeeDetails.isseparated ? "Active" : "Separated" }}
+                    </span>
+                  </div>
+                  <div class="emp-staff-kv">
+                    <span class="emp-staff-kv-label">Department</span>
+                    <span class="emp-staff-kv-value">{{ employeeDetails.deptdesc || "—" }}</span>
+                  </div>
+                  <div class="emp-staff-kv">
+                    <span class="emp-staff-kv-label">Position</span>
+                    <span class="emp-staff-kv-value">{{ employeeDetails.position_desc || "—" }}</span>
+                  </div>
+                  <div class="emp-staff-kv">
+                    <span class="emp-staff-kv-label">Date hired</span>
+                    <span class="emp-staff-kv-value">{{ formatDate(employeeDetails.datehired) || "—" }}</span>
+                  </div>
+                  <div class="emp-staff-kv">
+                    <span class="emp-staff-kv-label">Regularized</span>
+                    <span class="emp-staff-kv-value">{{ formatDate(employeeDetails.regularized) || "—" }}</span>
+                  </div>
+                  <div class="emp-staff-kv">
+                    <span class="emp-staff-kv-label">Separated date</span>
+                    <span class="emp-staff-kv-value">{{ formatDate(employeeDetails.separated) || "—" }}</span>
+                  </div>
+                  <div class="emp-staff-kv">
+                    <span class="emp-staff-kv-label">Years of service</span>
+                    <span class="emp-staff-kv-value">{{ getYearsOfService(employeeDetails.datehired) }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Contact Info Section -->
-          <div class="emp-profile-section">
-            <div class="emp-profile-section-header">
-              <div class="emp-profile-section-icon contact">
-                <font-awesome-icon icon="phone" />
+          <!-- Tab: Contact & IDs -->
+          <div v-show="employeeDetailTab === 2" class="emp-staff-layout emp-staff-layout--split">
+            <div class="emp-staff-card">
+              <div class="emp-staff-card-head">
+                <h3>Contact information</h3>
               </div>
-              <div class="emp-profile-section-title">Contact Information</div>
+              <div class="emp-staff-card-body emp-staff-card-body--stack">
+                <div class="emp-staff-kv">
+                  <span class="emp-staff-kv-label">Email</span>
+                  <span class="emp-staff-kv-value">{{ employeeDetails.email || "—" }}</span>
+                </div>
+                <div class="emp-staff-kv">
+                  <span class="emp-staff-kv-label">Phone</span>
+                  <span class="emp-staff-kv-value">{{ employeeDetails.cell_no || "—" }}</span>
+                </div>
+                <div class="emp-staff-kv-full">
+                  <span class="emp-staff-kv-label">Address</span>
+                  <span class="emp-staff-kv-value">{{ formatCompleteAddress() || "—" }}</span>
+                </div>
+              </div>
             </div>
-            <div class="emp-profile-section-content">
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Email</div>
-                <div class="emp-profile-item-value">{{ employeeDetails.email }}</div>
+            <div class="emp-staff-card">
+              <div class="emp-staff-card-head">
+                <h3>Government &amp; statutory IDs</h3>
               </div>
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Phone</div>
-                <div class="emp-profile-item-value">{{ employeeDetails.cell_no }}</div>
-              </div>
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Address</div>
-                <div class="emp-profile-item-value">{{ formatCompleteAddress() }}</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Employment Info Section -->
-          <div class="emp-profile-section">
-            <div class="emp-profile-section-header">
-              <div class="emp-profile-section-icon employment">
-                <font-awesome-icon icon="briefcase" />
-              </div>
-              <div class="emp-profile-section-title">Employment Information</div>
-            </div>
-            <div class="emp-profile-section-content">
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Date Hired</div>
-                <div class="emp-profile-item-value">{{ formatDate(employeeDetails.datehired) }}</div>
-              </div>
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Regularized</div>
-                <div class="emp-profile-item-value">{{ formatDate(employeeDetails.regularized) }}</div>
-              </div>
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Separated Date</div>
-                <div class="emp-profile-item-value">{{ formatDate(employeeDetails.separated) }}</div>
-              </div>
-              <div class="emp-profile-item">
-                <div class="emp-profile-item-label">Years of Service</div>
-                <div class="emp-profile-item-value">{{ getYearsOfService(employeeDetails.datehired) }}</div>
+              <div class="emp-staff-card-body emp-staff-card-body--stack">
+                <div class="emp-staff-kv">
+                  <span class="emp-staff-kv-label">TIN</span>
+                  <span class="emp-staff-kv-value">{{ employeeDetails.tin || "—" }}</span>
+                </div>
+                <div class="emp-staff-kv">
+                  <span class="emp-staff-kv-label">PhilHealth</span>
+                  <span class="emp-staff-kv-value">{{ employeeDetails.philhealth_no || "—" }}</span>
+                </div>
+                <div class="emp-staff-kv">
+                  <span class="emp-staff-kv-label">SSS</span>
+                  <span class="emp-staff-kv-value">{{ employeeDetails.sss_no || "—" }}</span>
+                </div>
+                <div class="emp-staff-kv">
+                  <span class="emp-staff-kv-label">GSIS</span>
+                  <span class="emp-staff-kv-value">{{ employeeDetails.sss_gsis_no || "—" }}</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- ── Footer ── -->
-        <div class="emp-footer">
+        <div class="emp-footer emp-footer--split">
           <b-button
             size="sm"
-            variant="outline-dark"
+            variant="primary"
+            @click="openStaffQuickEditModal"
+          >
+            <font-awesome-icon icon="pen-to-square" class="mr-1" />
+            Edit
+          </b-button>
+          <b-button
+            size="sm"
+            variant="outline-secondary"
             @click="showEmployeeModal = false"
           >
             Close
           </b-button>
         </div>
       </div>
+    </b-modal>
+
+    <!-- Staff profile: quick edit (department, division, position, status) -->
+    <b-modal
+      id="employee-staff-quick-edit-modal"
+      v-model="showStaffQuickEditModal"
+      title="Edit assignment"
+      header-class="hrmsColor"
+      modal-class="staff-quick-edit-modal"
+      size="lg"
+      centered
+      body-class="p-0"
+      @hidden="staffQuickEditForm = null"
+    >
+      <div v-if="staffQuickEditForm" class="staff-quick-edit text-left">
+        <p class="staff-quick-edit-hint text-muted small">
+          You can change department, division, position, and status here. More fields will be added later.
+        </p>
+        <b-form
+          class="staff-quick-edit-fields"
+          @submit.prevent="saveStaffQuickEdit"
+        >
+          <b-form-group label="Department" label-for="sqe-dept">
+            <v-select
+              id="sqe-dept"
+              v-model="staffQuickEditForm.deptdesc"
+              :options="staffDeptOptionsForVueSelect"
+              placeholder="Select department"
+              :clearable="true"
+              :searchable="true"
+              :append-to-body="true"
+              class="staff-quick-dept-vselect"
+            />
+          </b-form-group>
+          <b-form-group label="Division" label-for="sqe-div">
+            <b-form-input
+              id="sqe-div"
+              v-model="staffQuickEditForm.divisiondesc"
+              placeholder="Division (optional)"
+            />
+          </b-form-group>
+          <b-form-group label="Position" label-for="sqe-pos">
+            <b-form-input
+              id="sqe-pos"
+              v-model="staffQuickEditForm.position_desc"
+              placeholder="Job title / position"
+            />
+          </b-form-group>
+          <b-form-group label="Separation status" label-for="sqe-sep">
+            <b-form-select
+              id="sqe-sep"
+              v-model="staffQuickEditForm.separation"
+              :options="staffSeparationSelectOptions"
+            />
+          </b-form-group>
+          <b-form-group label="Employment status" label-for="sqe-empst">
+            <b-form-select
+              id="sqe-empst"
+              v-model="staffQuickEditForm.employmentStatus"
+              :options="staffEmploymentStatusSelectOptions"
+            />
+          </b-form-group>
+        </b-form>
+      </div>
+      <template #modal-footer>
+        <div class="staff-quick-edit-footer">
+          <b-button size="sm" variant="outline-secondary" @click="showStaffQuickEditModal = false">
+            Cancel
+          </b-button>
+          <b-button size="sm" variant="primary" :disabled="!staffQuickEditForm" @click="saveStaffQuickEdit">
+            <font-awesome-icon icon="save" class="mr-1" />
+            Save
+          </b-button>
+        </div>
+      </template>
     </b-modal>
 
     <!-- QR Code Modal -->
@@ -975,8 +1146,11 @@ import axios from "axios";
 import Loading from "~/components/LoadingOverlay/Loadings.vue";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import vSelect from "vue-select";
+import "vue-select/dist/vue-select.css";
+
 export default {
-  components: { Loading },
+  components: { Loading, vSelect },
   data() {
     return {
       showLoading: false,
@@ -993,6 +1167,8 @@ export default {
       ],
       selectedDepartments: [],
       departmentOptions: [],
+      selectedEmploymentStatuses: [],
+      employmentStatusOptions: ['Permanent', 'Job Order ', 'Elected', 'Co-terminous', 'Casual'],
       alert: {
         showAlert: 0,
         variant: "",
@@ -1000,6 +1176,8 @@ export default {
       },
       employeeDetails: null,
       showEmployeeModal: false,
+      employeeDetailTab: 0,
+      profilePhotoFailed: false,
       departments: [],
       formDriver: {},
       qrCodeEmployee: null,
@@ -1015,6 +1193,8 @@ export default {
       // Edit modal
       showEditModal: false,
       editEmployeeData: null,
+      showStaffQuickEditModal: false,
+      staffQuickEditForm: null,
       selectedEmployees: [],
       selectAllChecked: false,
       showConfirmModal: false,
@@ -1089,12 +1269,21 @@ export default {
       return Math.min(this.currentPage * this.perPage, this.filteredTotalRows);
     },
     filteredEmployees() {
-      if (this.selectedDepartments.length === 0) {
-        return this.employees;
+      let filtered = this.employees;
+
+      if (this.selectedDepartments.length > 0) {
+        filtered = filtered.filter((employee) =>
+          this.selectedDepartments.includes(employee.deptdesc)
+        );
       }
-      return this.employees.filter((employee) =>
-        this.selectedDepartments.includes(employee.deptdesc)
-      );
+
+      if (this.selectedEmploymentStatuses.length > 0) {
+        filtered = filtered.filter((employee) =>
+          this.selectedEmploymentStatuses.includes(employee.EmploymentStatus)
+        );
+      }
+
+      return filtered;
     },
     isAllSelected() {
       // Only consider employees that are not already separated
@@ -1117,9 +1306,42 @@ export default {
       return this.filteredEmployees.length;
     },
     sortedDepartments() {
-      return this.departments.slice().sort((a, b) => 
+      return this.departments.slice().sort((a, b) =>
         a.deptdesc.localeCompare(b.deptdesc)
       );
+    },
+    staffSeparationSelectOptions() {
+      return [
+        { value: "active", text: "Active" },
+        { value: "separated", text: "Separated" },
+      ];
+    },
+    /** Department labels for vue-select (string options = v-model is deptdesc) */
+    staffDeptOptionsForVueSelect() {
+      const names = this.sortedDepartments.map((d) => d.deptdesc).filter(Boolean);
+      const cur =
+        this.staffQuickEditForm && this.staffQuickEditForm.deptdesc
+          ? String(this.staffQuickEditForm.deptdesc).trim()
+          : "";
+      if (cur && !names.includes(cur)) {
+        return [cur, ...names];
+      }
+      return names;
+    },
+    staffEmploymentStatusSelectOptions() {
+      const opts = this.employmentStatusOptions.map((s) => ({
+        value: s,
+        text: s,
+      }));
+      const cur =
+        this.staffQuickEditForm && this.staffQuickEditForm.employmentStatus;
+      if (cur && !opts.some((o) => o.value === cur)) {
+        opts.unshift({ value: cur, text: `${cur} (current)` });
+      }
+      return [
+        { value: "", text: "— Select employment status —" },
+        ...opts,
+      ];
     },
     employeeProfileLink() {
       if (!this.qrCodeEmployee) return "";
@@ -1194,6 +1416,9 @@ export default {
       this.currentPage = 1;
       this.fetchEmployees();
     },
+    selectedEmploymentStatuses() {
+      this.currentPage = 1;
+    },
   },
   methods: {
     logout() {
@@ -1260,16 +1485,98 @@ export default {
           },
         });
 
-        this.employeeDetails = res.data[0];
+        const row = res.data && res.data[0];
+        if (!row) {
+          this.showAlert("No employee details returned.", "warning");
+          return;
+        }
+        this.employeeDetails = row;
+        this.employeeDetailTab = 0;
+        this.profilePhotoFailed = false;
         this.showEmployeeModal = true;
-        console.log("Employee details:", this.employeeDetails);
       } catch (error) {
         console.error("Error fetching employee details:", error);
-        this.$bvToast.toast("Failed to fetch employee details", {
-          title: "Error",
-          variant: "danger",
-          solid: true,
+        this.showAlert("Failed to fetch employee details.", "danger");
+      } finally {
+        this.showLoading = false;
+      }
+    },
+    openStaffQuickEditModal() {
+      const e = this.employeeDetails;
+      if (!e) return;
+      const empSt = e.EmploymentStatus != null ? String(e.EmploymentStatus) : "";
+      this.staffQuickEditForm = {
+        empid: e.empid,
+        empno: e.empno,
+        deptdesc: e.deptdesc || "",
+        divisiondesc:
+          e.divisiondesc || e.division_desc || e.division || "",
+        position_desc: e.position_desc || "",
+        separation: e.isseparated ? "separated" : "active",
+        employmentStatus: empSt,
+      };
+      this.showStaffQuickEditModal = true;
+    },
+    async refetchEmployeeDetails() {
+      const empid = this.employeeDetails && this.employeeDetails.empid;
+      if (!empid) return;
+      try {
+        const res = await axios({
+          method: "GET",
+          url: `${this.$axios.defaults.baseURL}/employees/get-one`,
+          params: { empid },
         });
+        const row = res.data && res.data[0];
+        if (row) {
+          this.employeeDetails = row;
+          this.profilePhotoFailed = false;
+        }
+      } catch (err) {
+        console.error("Error refreshing employee details:", err);
+      }
+    },
+    async saveStaffQuickEdit() {
+      const f = this.staffQuickEditForm;
+      if (!f || !f.empid) return;
+      if (!f.deptdesc) {
+        this.showAlert("Please select a department.", "warning");
+        return;
+      }
+      if (!f.position_desc || !String(f.position_desc).trim()) {
+        this.showAlert("Please enter a position.", "warning");
+        return;
+      }
+      try {
+        this.showLoading = true;
+        await axios({
+          method: "PUT",
+          url: `${this.$axios.defaults.baseURL}/employees/update/${f.empid}`,
+          data: {
+            empid: f.empid,
+            empno: f.empno,
+            deptdesc: f.deptdesc,
+            divisiondesc: f.divisiondesc
+              ? String(f.divisiondesc).trim()
+              : "",
+            position_desc: String(f.position_desc).trim(),
+            isseparated: f.separation === "separated",
+            EmploymentStatus: f.employmentStatus
+              ? String(f.employmentStatus).trim()
+              : "",
+          },
+        });
+        this.showAlert("Assignment updated successfully.", "success");
+        this.showStaffQuickEditModal = false;
+        this.staffQuickEditForm = null;
+        await this.refetchEmployeeDetails();
+        this.fetchEmployees();
+      } catch (error) {
+        console.error("Error saving quick edit:", error);
+        const msg =
+          error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          "Failed to save changes.";
+        this.showAlert(msg, "danger");
       } finally {
         this.showLoading = false;
       }
@@ -1499,6 +1806,9 @@ export default {
     onDepartmentChange() {
       this.currentPage = 1;
       this.fetchEmployees();
+    },
+    onEmploymentStatusChange() {
+      this.currentPage = 1;
     },
     debouncedFetchEmployees() {
       clearTimeout(this._searchTimer);
@@ -2088,225 +2398,449 @@ export default {
   color: #007bff;
 }
 
-/* Social Media Profile Styles */
-.emp-profile {
-  background: #267bff;
-  color: white;
-  border-radius: 0 0 20px 20px;
-  overflow: hidden;
-}
-
-.emp-profile-header {
+/* Staff detail modal (hrment-style) */
+.emp-staff-modal-title {
   display: flex;
   align-items: center;
-  padding: 30px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-}
-
-.emp-profile-avatar {
-  position: relative;
-  margin-right: 20px;
-}
-
-.emp-profile-avatar img {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  object-fit: cover;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-.emp-profile-avatar > div {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: #267bff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48px;
-  font-weight: bold;
-  color: white;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-.emp-profile-info {
-  flex: 1;
-}
-
-.emp-profile-name {
-  font-size: 32px;
-  font-weight: bold;
-  margin-bottom: 8px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.emp-profile-subtitle {
-  font-size: 18px;
-  opacity: 0.9;
-  margin-bottom: 12px;
-}
-
-.emp-profile-status {
-  display: inline-block;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 14px;
+  gap: 10px;
+  font-size: 15px;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.emp-profile-status.active {
-  background: rgba(40, 167, 69, 0.3);
-  border-color: rgba(40, 167, 69, 0.5);
+.emp-staff-modal {
+  background: #f5f6f8;
+  min-height: 200px;
 }
 
-.emp-profile-status.separated {
-  background: rgba(220, 53, 69, 0.3);
-  border-color: rgba(220, 53, 69, 0.5);
-}
-
-.emp-profile-stats {
+.emp-staff-summary-card {
   display: flex;
-  justify-content: space-around;
-  padding: 20px 30px;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.emp-profile-stat {
-  text-align: center;
-  flex: 1;
-}
-
-.emp-profile-stat-value {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 4px;
-  color: #fff;
-}
-
-.emp-profile-stat-label {
-  font-size: 14px;
-  opacity: 0.8;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.emp-profile-content {
-  background: #f8f9fa;
-  padding: 0;
-}
-
-.emp-profile-section {
-  background: white;
-  margin: 20px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 20px 28px;
+  margin: 20px 20px 0;
+  padding: 24px 28px;
+  background: #fff;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #eceef2;
 }
 
-.emp-profile-section-header {
-  display: flex;
-  align-items: center;
-  padding: 20px;
-  background: #267bff;
-  color: white;
-}
-
-.emp-profile-section-icon {
-  width: 40px;
-  height: 40px;
+.emp-staff-summary-avatar {
+  flex-shrink: 0;
+  width: 112px;
+  height: 112px;
   border-radius: 50%;
+  overflow: hidden;
+  background: #eef1f6;
+  border: 1px solid #e2e6ed;
+}
+
+.emp-staff-summary-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.emp-staff-summary-initials {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 12px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
+  font-size: 2rem;
+  font-weight: 700;
+  color: #6b7280;
 }
 
-.emp-profile-section-icon.basic {
-  background: rgba(52, 152, 219, 0.3);
-}
-
-.emp-profile-section-icon.personal {
-  background: rgba(155, 89, 182, 0.3);
-}
-
-.emp-profile-section-icon.government {
-  background: rgba(230, 126, 34, 0.3);
-}
-
-.emp-profile-section-icon.contact {
-  background: rgba(46, 204, 113, 0.3);
-}
-
-.emp-profile-section-icon.employment {
-  background: rgba(231, 76, 60, 0.3);
-}
-
-.emp-profile-section-title {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.emp-profile-section-content {
-  padding: 0;
-}
-
-.emp-profile-item {
-  display: flex;
-  padding: 16px 20px;
-  border-bottom: 1px solid #f0f0f0;
-  transition: background-color 0.2s;
-}
-
-.emp-profile-item:hover {
-  background-color: #f8f9fa;
-}
-
-.emp-profile-item:last-child {
-  border-bottom: none;
-}
-
-.emp-profile-item-label {
-  flex: 0 0 150px;
-  font-weight: 600;
-  color: #6c757d;
-  font-size: 14px;
-}
-
-.emp-profile-item-value {
+.emp-staff-summary-main {
   flex: 1;
-  color: #2c3e50;
-  font-size: 14px;
+  min-width: 200px;
 }
 
-.status-active {
-  color: #28a745;
-  font-weight: 600;
+.emp-staff-summary-name {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
-.status-separated {
-  color: #dc3545;
+.emp-staff-summary-role {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
   font-weight: 600;
+  color: #1877f2;
+  line-height: 1.4;
+}
+
+.emp-staff-summary-status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.emp-staff-summary-status.is-active {
+  background: #e8f4ff;
+  color: #1877f2;
+}
+
+.emp-staff-summary-status.is-separated {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.emp-staff-summary-meta {
+  flex: 1 1 260px;
+  min-width: 220px;
+}
+
+.emp-staff-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 24px;
+}
+
+.emp-staff-meta-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.emp-staff-meta-label {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.emp-staff-meta-value {
+  font-size: 0.875rem;
+  color: #374151;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.emp-staff-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 0 20px;
+  padding: 0 4px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f5f6f8;
+}
+
+.emp-staff-tab {
+  position: relative;
+  border: none;
+  background: transparent;
+  padding: 14px 18px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.emp-staff-tab:hover {
+  color: #1877f2;
+  background: rgba(24, 119, 242, 0.06);
+}
+
+.emp-staff-tab--active {
+  color: #1877f2;
+  background: rgba(24, 119, 242, 0.08);
+}
+
+.emp-staff-tab--active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 3px;
+  background: #1877f2;
+  border-radius: 3px 3px 0 0;
+}
+
+.emp-staff-panel-wrap {
+  padding: 16px 20px 8px;
+}
+
+.emp-staff-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 991px) {
+  .emp-staff-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .emp-staff-col--side {
+    order: -1;
+  }
+}
+
+.emp-staff-layout--stack {
+  grid-template-columns: 1fr;
+}
+
+.emp-staff-layout--split {
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 767px) {
+  .emp-staff-layout--split {
+    grid-template-columns: 1fr;
+  }
+
+  .emp-staff-meta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.emp-staff-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #eceef2;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+}
+
+.emp-staff-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 0;
+}
+
+.emp-staff-card-head h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.emp-staff-card-body {
+  padding: 16px 20px 20px;
+}
+
+.emp-staff-card-body--stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.emp-staff-kv-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 28px;
+}
+
+.emp-staff-kv-grid--wide {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+@media (max-width: 600px) {
+  .emp-staff-kv-grid,
+  .emp-staff-kv-grid--wide {
+    grid-template-columns: 1fr;
+  }
+}
+
+.emp-staff-kv {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.emp-staff-kv-label {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.emp-staff-kv-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.emp-staff-kv-full {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.emp-staff-text-success {
+  color: #059669;
+}
+
+.emp-staff-text-danger {
+  color: #dc2626;
 }
 
 .emp-footer {
-  padding: 20px;
-  background: #f8f9fa;
-  border-top: 1px solid #e9ecef;
+  padding: 16px 20px;
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
   text-align: right;
 }
 
-/* Modal adjustments */
-::v-deep .modal-xl {
-  max-width: 900px;
+.emp-footer--split {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  text-align: left;
+}
+
+.staff-quick-edit {
+  padding: 0;
+}
+
+.staff-quick-edit-hint {
+  margin: 0 1.25rem 1rem;
+  line-height: 1.45;
+}
+
+.staff-quick-edit-fields {
+  margin: 0 1.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.staff-quick-edit-fields ::v-deep .form-group {
+  margin-bottom: 0.85rem;
+}
+
+.staff-quick-edit-fields ::v-deep .form-group:last-of-type {
+  margin-bottom: 0;
+}
+
+/* vue-select: match Bootstrap form-control look inside quick edit */
+.staff-quick-dept-vselect {
+  display: block;
+}
+
+.staff-quick-dept-vselect ::v-deep .vs__dropdown-toggle {
+  min-height: calc(1.5em + 0.75rem + 2px);
+  padding: 0.2rem 0.55rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  background-color: #fff;
+}
+
+.staff-quick-dept-vselect ::v-deep .vs__selected-options {
+  flex-wrap: wrap;
+  padding: 0;
+}
+
+.staff-quick-dept-vselect ::v-deep .vs__search,
+.staff-quick-dept-vselect ::v-deep .vs__search:focus {
+  margin: 0;
+  padding: 0.1rem 0;
+}
+
+.staff-quick-dept-vselect ::v-deep .vs__actions {
+  padding-top: 0;
+}
+
+.staff-quick-dept-vselect ::v-deep .vs__dropdown-menu {
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+  z-index: 1060;
+}
+
+.staff-quick-dept-vselect.vs--open ::v-deep .vs__dropdown-toggle {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+}
+
+.staff-quick-edit-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* Quick edit modal: full-width body, horizontal inset only on content */
+::v-deep .staff-quick-edit-modal .modal-body {
+  padding: 0.75rem 0 0 !important;
+}
+
+::v-deep .staff-quick-edit-modal .modal-footer {
+  padding: 0.75rem 1.25rem 1rem !important;
+  border-top: 1px solid #e9ecef;
+  justify-content: flex-end;
+}
+
+::v-deep .staff-quick-edit-modal .modal-dialog.modal-lg {
+  max-width: min(560px, calc(100vw - 2rem));
+}
+
+/* Staff detail modal: same vertical anchor (near top); short content sits higher, tall content grows downward with scroll */
+::v-deep .emp-staff-modal-root.modal {
+  align-items: flex-start !important;
+  justify-content: center;
+  padding-top: clamp(0.75rem, 3vh, 2rem);
+  padding-bottom: 1rem;
+}
+
+::v-deep .emp-staff-modal-root .emp-staff-modal-dialog.modal-dialog {
+  margin: 0 auto 1rem !important;
+  max-width: min(1080px, 96vw);
+  width: 100%;
+  max-height: calc(100vh - clamp(1.5rem, 4vh, 3rem));
+  display: flex;
+  flex-direction: column;
+}
+
+::v-deep .emp-staff-modal-root .emp-staff-modal-content.modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 20px 50px rgba(17, 24, 39, 0.15);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+::v-deep .emp-staff-modal-root .emp-staff-modal-content .modal-body {
+  padding: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  background: #f5f6f8;
+}
+
+/* Wider modal + scoped chrome for staff detail only */
+::v-deep .emp-staff-modal-header {
+  background: #fff !important;
+  color: #111827 !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  padding: 14px 20px !important;
+}
+
+::v-deep .emp-staff-modal-header .close {
+  color: #6b7280 !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
 }
 
 ::v-deep .modal-content {
