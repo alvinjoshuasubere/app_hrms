@@ -63,6 +63,7 @@ module.exports = {
   },
 
   build: {
+    transpile: ["vue-select"],
     /*
      ** You can extend webpack config here
      */
