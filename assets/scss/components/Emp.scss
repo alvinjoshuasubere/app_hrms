@@ -1,0 +1,601 @@
+
+.employee-checkbox {
+    transform: scale(1.2);
+  }
+  
+  .employee-checkbox:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  
+  .department-dropdown {
+    width: 100%;
+  }
+  
+  .dept-checkbox {
+    margin-bottom: 0.5rem;
+  }
+  
+  .selected-departments {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .employee-page {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90vw;
+    bottom: 0;
+    overflow-x: hidden;
+    background: white;
+    overflow-y: auto;
+    z-index: 5;
+    padding-top: 20px;
+  }
+  
+  .employee-photo-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4px;
+  }
+  
+  .employee-thumbnail {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .photo-placeholder-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    border: 2px solid #e0e0e0;
+  }
+  
+  .status-circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  
+  .status-circle.active {
+    background-color: #28a745;
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
+  }
+  
+  .status-circle.separated {
+    background-color: #dc3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+  }
+  
+  .employee-card {
+    border-radius: 0;
+    width: 100%;
+    margin: 0;
+  }
+  
+  .employee-navbar {
+    min-height: 56px;
+    background-color: #285ccc !important;
+    color: #fff2bd !important;
+  }
+  
+  .navbar-logo {
+    height: 30px;
+    width: auto;
+    object-fit: contain;
+  }
+  
+  .qr-code-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .qr-code-wrapper {
+    margin-bottom: 20px;
+  }
+  
+  .qr-code-image {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px;
+    background: white;
+  }
+  
+  .qr-code-info {
+    width: 100%;
+  }
+  
+  .qr-code-link {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    word-break: break-all;
+  }
+  
+  .qr-code-link code {
+    font-size: 11px;
+    color: #007bff;
+  }
+  
+  /* Staff detail modal (hrment-style) */
+  .emp-staff-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  
+  .emp-staff-modal {
+    background: #f5f6f8;
+    min-height: 200px;
+  }
+  
+  .emp-staff-summary-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 20px 28px;
+    margin: 20px 20px 0;
+    padding: 24px 28px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    border: 1px solid #eceef2;
+  }
+  
+  .emp-staff-summary-avatar {
+    flex-shrink: 0;
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #eef1f6;
+    border: 1px solid #e2e6ed;
+  }
+  
+  .emp-staff-summary-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  
+  .emp-staff-summary-initials {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #6b7280;
+  }
+  
+  .emp-staff-summary-main {
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  .emp-staff-summary-name {
+    margin: 0 0 8px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  
+  .emp-staff-summary-role {
+    margin: 0 0 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1877f2;
+    line-height: 1.4;
+  }
+  
+  .emp-staff-summary-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  
+  .emp-staff-summary-status.is-active {
+    background: #e8f4ff;
+    color: #1877f2;
+  }
+  
+  .emp-staff-summary-status.is-separated {
+    background: #fef2f2;
+    color: #b91c1c;
+  }
+  
+  .emp-staff-summary-meta {
+    flex: 1 1 260px;
+    min-width: 220px;
+  }
+  
+  .emp-staff-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 24px;
+  }
+  
+  .emp-staff-meta-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .emp-staff-meta-label {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    font-weight: 500;
+  }
+  
+  .emp-staff-meta-value {
+    font-size: 0.875rem;
+    color: #374151;
+    font-weight: 600;
+    word-break: break-word;
+  }
+  
+  .emp-staff-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    margin: 0 20px;
+    padding: 0 4px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f5f6f8;
+  }
+  
+  .emp-staff-tab {
+    position: relative;
+    border: none;
+    background: transparent;
+    padding: 14px 18px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  
+  .emp-staff-tab:hover {
+    color: #1877f2;
+    background: rgba(24, 119, 242, 0.06);
+  }
+  
+  .emp-staff-tab--active {
+    color: #1877f2;
+    background: rgba(24, 119, 242, 0.08);
+  }
+  
+  .emp-staff-tab--active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 3px;
+    background: #1877f2;
+    border-radius: 3px 3px 0 0;
+  }
+  
+  .emp-staff-panel-wrap {
+    padding: 16px 20px 8px;
+  }
+  
+  .emp-staff-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 16px;
+    align-items: start;
+  }
+  
+  @media (max-width: 991px) {
+    .emp-staff-layout {
+      grid-template-columns: 1fr;
+    }
+  
+    .emp-staff-col--side {
+      order: -1;
+    }
+  }
+  
+  .emp-staff-layout--stack {
+    grid-template-columns: 1fr;
+  }
+  
+  .emp-staff-layout--split {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  @media (max-width: 767px) {
+    .emp-staff-layout--split {
+      grid-template-columns: 1fr;
+    }
+  
+    .emp-staff-meta-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .emp-staff-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #eceef2;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 16px;
+  }
+  
+  .emp-staff-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 0;
+  }
+  
+  .emp-staff-card-head h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+  }
+  
+  .emp-staff-card-body {
+    padding: 16px 20px 20px;
+  }
+  
+  .emp-staff-card-body--stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  
+  .emp-staff-kv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 28px;
+  }
+  
+  .emp-staff-kv-grid--wide {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  
+  @media (max-width: 600px) {
+    .emp-staff-kv-grid,
+    .emp-staff-kv-grid--wide {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .emp-staff-kv {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .emp-staff-kv-label {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    font-weight: 500;
+  }
+  
+  .emp-staff-kv-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+  
+  .emp-staff-kv-full {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #f3f4f6;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .emp-staff-text-success {
+    color: #059669;
+  }
+  
+  .emp-staff-text-danger {
+    color: #dc2626;
+  }
+  
+  .emp-footer {
+    padding: 16px 20px;
+    background: #fff;
+    border-top: 1px solid #e5e7eb;
+    text-align: right;
+  }
+  
+  .emp-footer--split {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    text-align: left;
+  }
+  
+  .staff-quick-edit {
+    padding: 0;
+  }
+  
+  .staff-quick-edit-hint {
+    margin: 0 1.25rem 1rem;
+    line-height: 1.45;
+  }
+  
+  .staff-quick-edit-fields {
+    margin: 0 1.25rem;
+    padding-bottom: 0.25rem;
+  }
+  
+  .staff-quick-edit-fields ::v-deep .form-group {
+    margin-bottom: 0.85rem;
+  }
+  
+  .staff-quick-edit-fields ::v-deep .form-group:last-of-type {
+    margin-bottom: 0;
+  }
+  
+  /* vue-select: match Bootstrap form-control look inside quick edit */
+  .staff-quick-dept-vselect {
+    display: block;
+  }
+  
+  .staff-quick-dept-vselect ::v-deep .vs__dropdown-toggle {
+    min-height: calc(1.5em + 0.75rem + 2px);
+    padding: 0.2rem 0.55rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    background-color: #fff;
+  }
+  
+  .staff-quick-dept-vselect ::v-deep .vs__selected-options {
+    flex-wrap: wrap;
+    padding: 0;
+  }
+  
+  .staff-quick-dept-vselect ::v-deep .vs__search,
+  .staff-quick-dept-vselect ::v-deep .vs__search:focus {
+    margin: 0;
+    padding: 0.1rem 0;
+  }
+  
+  .staff-quick-dept-vselect ::v-deep .vs__actions {
+    padding-top: 0;
+  }
+  
+  .staff-quick-dept-vselect ::v-deep .vs__dropdown-menu {
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    z-index: 1060;
+  }
+  
+  .staff-quick-dept-vselect.vs--open ::v-deep .vs__dropdown-toggle {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+  }
+  
+  .staff-quick-edit-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  /* Quick edit modal: full-width body, horizontal inset only on content */
+  ::v-deep .staff-quick-edit-modal .modal-body {
+    padding: 0.75rem 0 0 !important;
+  }
+  
+  ::v-deep .staff-quick-edit-modal .modal-footer {
+    padding: 0.75rem 1.25rem 1rem !important;
+    border-top: 1px solid #e9ecef;
+    justify-content: flex-end;
+  }
+  
+  ::v-deep .staff-quick-edit-modal .modal-dialog.modal-lg {
+    max-width: min(560px, calc(100vw - 2rem));
+  }
+  
+  /* Staff detail modal: same vertical anchor (near top); short content sits higher, tall content grows downward with scroll */
+  ::v-deep .emp-staff-modal-root.modal {
+    align-items: flex-start !important;
+    justify-content: center;
+    padding-top: clamp(0.75rem, 3vh, 2rem);
+    padding-bottom: 1rem;
+  }
+  
+  ::v-deep .emp-staff-modal-root .emp-staff-modal-dialog.modal-dialog {
+    margin: 0 auto 1rem !important;
+    max-width: min(1080px, 96vw);
+    width: 100%;
+    max-height: calc(100vh - clamp(1.5rem, 4vh, 3rem));
+    display: flex;
+    flex-direction: column;
+  }
+  
+  ::v-deep .emp-staff-modal-root .emp-staff-modal-content.modal-content {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 20px 50px rgba(17, 24, 39, 0.15);
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  
+  ::v-deep .emp-staff-modal-root .emp-staff-modal-content .modal-body {
+    padding: 0;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    background: #f5f6f8;
+  }
+  
+  /* Wider modal + scoped chrome for staff detail only */
+  ::v-deep .emp-staff-modal-header {
+    background: #fff !important;
+    color: #111827 !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    padding: 14px 20px !important;
+  }
+  
+  ::v-deep .emp-staff-modal-header .close {
+    color: #6b7280 !important;
+    opacity: 1 !important;
+    text-shadow: none !important;
+  }
+  
+  ::v-deep .modal-content {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+  
+  ::v-deep .modal-header {
+    background: #267bff;
+    color: white;
+    border: none;
+    padding: 20px 30px;
+  }
+  
+  ::v-deep .modal-body {
+    padding: 0;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
