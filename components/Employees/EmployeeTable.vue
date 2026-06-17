@@ -1,29 +1,6 @@
 <template>
   <div>
     <Loading v-if="showLoading" />
-    <b-navbar
-      toggleable="lg"
-      type="dark"
-      variant="dark"
-      fixed="top"
-      class="employee-navbar"
-    >
-      <b-navbar-brand>
-        <img src="/city_logo.png" alt="City Logo" class="navbar-logo mr-2" />
-        HRMS
-      </b-navbar-brand>
-      <b-navbar-nav class="ml-auto">
-        <b-button
-          variant="outline-light"
-          size="sm"
-          @click="logout"
-          class="ml-2"
-        >
-          <font-awesome-icon icon="power-off" class="editIcon mr-2" small />
-          Logout
-        </b-button>
-      </b-navbar-nav>
-    </b-navbar>
 
     <div class="employee-page">
       <b-row>
@@ -62,103 +39,127 @@
               </div>
 
               <div class="filter-controls">
-                <b-form-select
-                  v-model="selectedStatus"
-                  :options="statusOptions"
-                  @change="onStatusChange"
-                  class="modern-select-sm"
-                ></b-form-select>
+                <div class="filter-group">
+                  <b-form-select
+                    v-model="selectedStatus"
+                    :options="statusOptions"
+                    @change="onStatusChange"
+                    class="modern-select-sm"
+                  ></b-form-select>
+                </div>
 
-                <b-dropdown
-                  size="sm"
-                  variant="outline-primary"
-                  text="Office Filter"
-                  class="modern-dropdown"
-                >
-                  <b-dropdown-header>Department</b-dropdown-header>
-                  <b-dropdown-form class="dropdown-scroll-panel">
-                    <b-form-checkbox
-                      v-for="dept in sortedDepartments"
-                      :key="dept.deptdesc"
-                      v-model="selectedDepartments"
-                      :value="dept.deptdesc"
-                      @change="onDepartmentChange"
+                <div class="filter-group office-filter-group">
+                  <div class="filter-row">
+                    <b-dropdown
+                      size="sm"
+                      variant="outline-primary"
+                      text="Select Office"
+                      class="modern-dropdown office-dropdown"
+                      ref="officeDropdown"
                     >
-                      {{ dept.deptdesc }}
-                    </b-form-checkbox>
-                  </b-dropdown-form>
-                  <b-dropdown-divider></b-dropdown-divider>
-                  <b-dropdown-header>Division</b-dropdown-header>
-                  <b-dropdown-form class="dropdown-scroll-panel">
-                    <b-form-checkbox
-                      v-for="div in sortedDivisions"
-                      :key="div.division_desc"
-                      v-model="selectedDivisions"
-                      :value="div.division_desc"
-                      @change="onDivisionChange"
+                      <b-dropdown-header>Department</b-dropdown-header>
+                      <div class="dropdown-action-row">
+                        <b-button size="sm" variant="link" @click="selectAllDepartments">All</b-button>
+                        <b-button size="sm" variant="link" @click="selectedDepartments = []">Clear</b-button>
+                      </div>
+                      <b-dropdown-form class="dropdown-scroll-panel">
+                        <b-form-checkbox
+                          v-for="dept in sortedDepartments"
+                          :key="dept.deptdesc"
+                          v-model="selectedDepartments"
+                          :value="dept.deptdesc"
+                          @change="onDepartmentChange"
+                        >
+                          {{ dept.deptdesc }}
+                        </b-form-checkbox>
+                      </b-dropdown-form>
+                      <b-dropdown-divider
+                        v-if="selectedDepartments.length > 0"
+                      ></b-dropdown-divider>
+                      <b-dropdown-header v-if="selectedDepartments.length > 0"
+                        >Division</b-dropdown-header
+                      >
+                      <b-dropdown-form
+                        v-if="selectedDepartments.length > 0"
+                        class="dropdown-scroll-panel"
+                      >
+                        <div class="dropdown-action-row">
+                          <b-button size="sm" variant="link" @click="selectAllDivisions">All</b-button>
+                          <b-button size="sm" variant="link" @click="selectedDivisions = []">Clear</b-button>
+                        </div>
+                        <b-form-checkbox
+                          v-for="div in sortedDivisions"
+                          :key="div.division_desc"
+                          v-model="selectedDivisions"
+                          :value="div.division_desc"
+                          @change="onDivisionChange"
+                        >
+                          {{ div.division_desc }}
+                        </b-form-checkbox>
+                      </b-dropdown-form>
+                    </b-dropdown>
+                    <b-button
+                      v-if="
+                        selectedDepartments.length > 0 ||
+                        selectedDivisions.length > 0
+                      "
+                      size="sm"
+                      variant="outline-danger"
+                      class="filter-clear-btn"
+                      @click="clearOfficeFilter"
+                      v-b-tooltip.hover
+                      title="Clear Office filter"
                     >
-                      {{ div.division_desc }}
-                    </b-form-checkbox>
-                  </b-dropdown-form>
-                </b-dropdown>
+                      <font-awesome-icon icon="xmark" />
+                    </b-button>
+                  </div>
+                </div>
 
-                <b-dropdown
-                  size="sm"
-                  variant="outline-primary"
-                  text="Type"
-                  class="modern-dropdown"
-                >
-                  <b-dropdown-form class="dropdown-scroll-panel">
-                    <b-form-checkbox
-                      v-for="status in employmentStatusOptions"
-                      :key="status"
-                      v-model="selectedEmploymentStatuses"
-                      :value="status"
-                      @change="onEmploymentStatusChange"
+                <div class="filter-group">
+                  <div class="filter-row">
+                    <b-dropdown
+                      size="sm"
+                      variant="outline-primary"
+                      text="Select Type"
+                      class="modern-dropdown"
+                      ref="typeDropdown"
                     >
-                      {{ status }}
-                    </b-form-checkbox>
-                  </b-dropdown-form>
-                </b-dropdown>
+                      <b-dropdown-form class="dropdown-scroll-panel">
+                        <div class="dropdown-action-row">
+                          <b-button size="sm" variant="link" @click="selectAllTypes">All</b-button>
+                          <b-button size="sm" variant="link" @click="selectedEmploymentStatuses = []">Clear</b-button>
+                        </div>
+                        <b-form-checkbox
+                          v-for="status in employmentStatusOptions"
+                          :key="status"
+                          v-model="selectedEmploymentStatuses"
+                          :value="status"
+                          @change="onEmploymentStatusChange"
+                        >
+                          {{ status }}
+                        </b-form-checkbox>
+                      </b-dropdown-form>
+                    </b-dropdown>
+                    <b-button
+                      v-if="selectedEmploymentStatuses.length > 0"
+                      size="sm"
+                      variant="outline-danger"
+                      class="filter-clear-btn"
+                      @click="clearTypeFilter"
+                      v-b-tooltip.hover
+                      title="Clear Type filter"
+                    >
+                      <font-awesome-icon icon="xmark" />
+                    </b-button>
+                  </div>
+                </div>
               </div>
             </div>
 
             <!-- Seamless Toolbar -->
             <div class="seamless-toolbar px-3 py-2 mb-3">
               <div class="toolbar-left">
-                <!-- Separated Action Group -->
-                <div class="action-group">
-                  <div class="selection-status d-flex align-items-center">
-                    <b-form-checkbox
-                      :indeterminate="isPartiallySelected"
-                      :checked="isAllSelected"
-                      @change="toggleSelectAll"
-                      class="custom-check-primary"
-                    >
-                      <span class="toolbar-label">Separation Selection</span>
-                    </b-form-checkbox>
-                    <b-badge
-                      pill
-                      variant="light"
-                      class="ml-2 px-2 text-primary"
-                    >
-                      {{ selectedEmployees.length }} Selected
-                    </b-badge>
-                  </div>
-                  <b-button
-                    size="sm"
-                    variant="primary"
-                    class="btn-elevated ml-3"
-                    @click="confirmUpdateToSeparated"
-                    :disabled="selectedEmployees.length === 0"
-                  >
-                    Update Status
-                  </b-button>
-                </div>
-
-                <div class="toolbar-v-divider"></div>
-
-                <!-- QR Action Group -->
+                <!-- Selection Action Group -->
                 <div class="action-group">
                   <div class="selection-status d-flex align-items-center">
                     <b-form-checkbox
@@ -167,7 +168,7 @@
                       @change="toggleQRSelectAll"
                       class="custom-check-success"
                     >
-                      <span class="toolbar-label">QR Selection</span>
+                      <span class="toolbar-label">Select Employees</span>
                     </b-form-checkbox>
                     <b-badge
                       pill
@@ -176,6 +177,17 @@
                     >
                       {{ selectedForQR.length }} Selected
                     </b-badge>
+                    <b-button
+                      v-if="selectedForQR.length > 0"
+                      size="sm"
+                      variant="outline-danger"
+                      class="ml-1 filter-clear-btn"
+                      @click="clearEmployeeSelection"
+                      v-b-tooltip.hover
+                      title="Clear selection"
+                    >
+                      <font-awesome-icon icon="xmark" />
+                    </b-button>
                   </div>
                   <b-button
                     size="sm"
@@ -185,7 +197,17 @@
                     :disabled="selectedForQR.length === 0"
                   >
                     <font-awesome-icon icon="qrcode" class="mr-1" />
-                    Gen QR Codes
+                    Generate QR
+                  </b-button>
+                  <b-button
+                    size="sm"
+                    variant="primary"
+                    class="btn-elevated ml-2"
+                    @click="confirmUpdateToSeparated"
+                    :disabled="selectedForQR.length === 0"
+                  >
+                    <font-awesome-icon icon="user-check" class="mr-1" />
+                    Update Status
                   </b-button>
                 </div>
               </div>
@@ -219,17 +241,6 @@
               :sticky-header="'400px'"
               empty-text="No employees found"
             >
-              <template v-slot:cell(selected)="row">
-                <div
-                  class="d-flex justify-content-center align-items-center h-100"
-                >
-                  <b-form-checkbox
-                    :checked="row.item.isseparated"
-                    @change="toggleEmployeeSelection(row.item)"
-                    class="employee-checkbox"
-                  />
-                </div>
-              </template>
               <template v-slot:cell(image)="row">
                 <div class="employee-photo-cell">
                   <img
@@ -1248,14 +1259,14 @@
           <h5>Update Employee Status</h5>
           <p>
             Are you sure you want to set
-            <strong>{{ selectedEmployees.length }}</strong> employee(s) to
+            <strong>{{ selectedForQR.length }}</strong> employee(s) to
             <strong>Separated</strong> status?
           </p>
 
-          <div class="employee-list" v-if="selectedEmployees.length <= 5">
+          <div class="employee-list" v-if="selectedForQR.length <= 5">
             <div
               class="employee-item"
-              v-for="employee in selectedEmployees.slice(0, 5)"
+              v-for="employee in selectedForQR.slice(0, 5)"
               :key="employee.empid"
             >
               <font-awesome-icon icon="user" class="item-icon" />
@@ -1470,17 +1481,15 @@ export default {
       editEmployeeData: null,
       showStaffQuickEditModal: false,
       staffQuickEditForm: null,
-      selectedEmployees: [],
-      selectAllChecked: false,
+      selectedForQR: [],
       showConfirmModal: false,
       showMultipleQRModal: false,
       isDownloadingAll: false,
-      selectedForQR: [],
       isUpdating: false,
       fields: [
         {
           key: "qr_select",
-          label: "QR",
+          label: "",
           sortable: false,
           class: "text-center",
         },
@@ -1518,16 +1527,10 @@ export default {
           class: "text-center",
         },
         {
-          key: "selected",
-          label: "Set to Separated",
-          sortable: false,
-          class: "text-center",
-        },
-        {
           key: "isseparated",
           label: "Status",
           sortable: false,
-          class: "text-left",
+          class: "text-center",
         },
         { key: "actions", label: "Actions", sortable: false },
       ],
@@ -1570,11 +1573,18 @@ export default {
       }
 
       if (this.selectedDivisions.length > 0) {
-        filtered = filtered.filter((employee) =>
-          this.selectedDivisions.includes(
-            employee.division_desc || employee.divisiondesc || employee.division
-          )
-        );
+        filtered = filtered.filter((employee) => {
+          const divisionValue = String(
+            employee.division_desc ||
+              employee.divisiondesc ||
+              employee.division ||
+              ""
+          ).trim();
+          return this.selectedDivisions.some(
+            (selectedDivision) =>
+              String(selectedDivision || "").trim() === divisionValue
+          );
+        });
       }
 
       if (this.selectedEmploymentStatuses.length > 0) {
@@ -1584,27 +1594,6 @@ export default {
       }
 
       return filtered;
-    },
-    isAllSelected() {
-      // Only consider employees that are not already separated
-      const eligibleEmployees = this.filteredEmployees.filter(
-        (emp) => !emp.isseparated
-      );
-      if (eligibleEmployees.length === 0) return false;
-      return eligibleEmployees.every((emp) =>
-        this.selectedEmployees.some((selected) => selected.empid === emp.empid)
-      );
-    },
-    isPartiallySelected() {
-      // Only consider employees that are not already separated
-      const eligibleEmployees = this.filteredEmployees.filter(
-        (emp) => !emp.isseparated
-      );
-      if (eligibleEmployees.length === 0) return false;
-      const selectedCount = eligibleEmployees.filter((emp) =>
-        this.selectedEmployees.some((selected) => selected.empid === emp.empid)
-      ).length;
-      return selectedCount > 0 && selectedCount < eligibleEmployees.length;
     },
     isAllQRSelected() {
       if (this.filteredEmployees.length === 0) return false;
@@ -1789,6 +1778,33 @@ export default {
     },
     clearSearch() {
       this.searchText = "";
+    },
+    selectAllDepartments() {
+      this.selectedDepartments = this.sortedDepartments.map(d => d.deptdesc);
+      this.onDepartmentChange();
+    },
+    selectAllDivisions() {
+      this.selectedDivisions = this.sortedDivisions.map(d => d.division_desc);
+      this.onDivisionChange();
+    },
+    selectAllTypes() {
+      this.selectedEmploymentStatuses = [...this.employmentStatusOptions];
+      this.onEmploymentStatusChange();
+    },
+    clearOfficeFilter() {
+      this.selectedDepartments = [];
+      this.selectedDivisions = [];
+      this.onDepartmentChange();
+      if (this.$refs.officeDropdown) {
+        this.$refs.officeDropdown.hide();
+      }
+    },
+    clearTypeFilter() {
+      this.selectedEmploymentStatuses = [];
+      this.onEmploymentStatusChange();
+      if (this.$refs.typeDropdown) {
+        this.$refs.typeDropdown.hide();
+      }
     },
     onStatusChange() {
       this.fetchEmployees();
@@ -2535,101 +2551,8 @@ export default {
         this.bloodTypes = [];
       }
     },
-    toggleEmployeeSelection(employee) {
-      // Toggle the isseparated status
-      employee.isseparated = !employee.isseparated;
-
-      // Update selected employees array
-      if (employee.isseparated) {
-        // Add to selected employees if not already there
-        if (
-          !this.selectedEmployees.find((emp) => emp.empid === employee.empid)
-        ) {
-          this.selectedEmployees.push(employee);
-        }
-      } else {
-        // Remove from selected employees
-        this.selectedEmployees = this.selectedEmployees.filter(
-          (emp) => emp.empid !== employee.empid
-        );
-      }
-
-      // Update employee status via API
-      this.updateEmployeeStatus(employee);
-    },
-    getSelectedSeparatedEmployees() {
-      return this.selectedEmployees.filter((emp) => emp.isseparated);
-    },
-    selectAllSeparated() {
-      // Get all separated employees
-      const separatedEmployees = this.employees.filter(
-        (emp) => emp.isseparated
-      );
-
-      // Clear current selection and add all separated employees
-      this.selectedEmployees = [...separatedEmployees];
-
-      // Select departments that have separated employees
-      const separatedDeptNames = [
-        ...new Set(separatedEmployees.map((emp) => emp.deptdesc)),
-      ];
-      this.selectedDepartments = separatedDeptNames;
-
-      // Show alert
-      this.showAlert(
-        `Selected ${separatedEmployees.length} separated employees`,
-        "info"
-      );
-    },
-    async updateAllSelected() {
-      if (this.selectedEmployees.length === 0) {
-        this.showAlert("warning", "Please select at least one employee first.");
-        return;
-      }
-
-      try {
-        this.showLoading = true;
-        const res = await axios({
-          method: "PUT",
-          url: `${this.$axios.defaults.baseURL}/employees/update-separated/batch`,
-          data: {
-            employees: this.selectedEmployees.map((emp) => ({
-              empid: emp.empid,
-              isseparated: true,
-            })),
-          },
-        });
-
-        this.showAlert(
-          "success",
-          `Successfully updated ${this.selectedEmployees.length} employees to Separated status!`
-        );
-        this.fetchEmployees(); // Refresh the table
-      } catch (error) {
-        console.error("Error batch updating employees:", error);
-        const msg =
-          error?.response?.data?.error || "Failed to update employees.";
-        this.showAlert("danger", msg);
-      } finally {
-        this.showLoading = false;
-      }
-    },
-    toggleSelectAll(checked) {
-      if (checked) {
-        // Select only filtered employees that are not already separated/checked
-        const unselectedEmployees = this.filteredEmployees.filter(
-          (emp) => !emp.isseparated
-        );
-        this.selectedEmployees = [...unselectedEmployees];
-        this.showAlert(
-          `Selected ${unselectedEmployees.length} employees`,
-          "success"
-        );
-      } else {
-        // Deselect all
-        this.selectedEmployees = [];
-        this.showAlert("Deselected all employees", "danger");
-      }
+    clearEmployeeSelection() {
+      this.selectedForQR = [];
     },
     toggleQRSelectAll(checked) {
       if (checked) {
@@ -2652,14 +2575,14 @@ export default {
       return this.selectedForQR.some((e) => e.empid === employee.empid);
     },
     confirmUpdateToSeparated() {
-      if (this.selectedEmployees.length === 0) {
+      if (this.selectedForQR.length === 0) {
         this.showAlert("warning", "Please select at least one employee first.");
         return;
       }
       this.showConfirmModal = true;
     },
     async updateAllToSeparated() {
-      if (this.selectedEmployees.length === 0) {
+      if (this.selectedForQR.length === 0) {
         this.showAlert("warning", "Please select at least one employee first.");
         return;
       }
@@ -2672,7 +2595,7 @@ export default {
           method: "PUT",
           url: `${this.$axios.defaults.baseURL}/employees/update-mult-toseparated`,
           data: {
-            employeesSelected: this.selectedEmployees.map((emp) => ({
+            employeesSelected: this.selectedForQR.map((emp) => ({
               empid: emp.empid,
             })),
           },
@@ -2680,10 +2603,10 @@ export default {
 
         this.showAlert(
           "success",
-          `Successfully updated ${this.selectedEmployees.length} employees to Separated status!`
+          `Successfully updated ${this.selectedForQR.length} employees to Separated status!`
         );
         this.fetchEmployees(); // Refresh the table
-        this.selectedEmployees = []; // Clear selection after update
+        this.selectedForQR = []; // Clear selection after update
         this.showConfirmModal = false; // Close modal
       } catch (error) {
         console.error("Error updating all employees to separated:", error);
@@ -2708,57 +2631,25 @@ export default {
       try {
         this.showLoading = true;
 
-        // Use new API endpoint
         const res = await axios({
           method: "PUT",
           url: `${this.$axios.defaults.baseURL}/employees/batch-update-separated`,
           data: {
-            employees: this.selectedEmployees.map((emp) => emp.empid),
+            employees: this.selectedForQR.map((emp) => emp.empid),
           },
         });
 
         this.showAlert(
           "success",
-          `Successfully updated ${this.selectedEmployees.length} employees to Separated status!`
+          `Successfully updated ${this.selectedForQR.length} employees to Separated status!`
         );
         this.fetchEmployees(); // Refresh the table
-        this.selectedEmployees = []; // Clear selection after update
+        this.selectedForQR = []; // Clear selection after update
       } catch (error) {
         console.error("Error batch updating employees:", error);
         const msg =
           error?.response?.data?.error || "Failed to update employees.";
         this.showAlert("danger", msg);
-      } finally {
-        this.showLoading = false;
-      }
-    },
-    async updateEmployeeStatus(employee) {
-      try {
-        this.showLoading = true;
-        const res = await axios({
-          method: "PUT",
-          url: `${this.$axios.defaults.baseURL}/employees/update-separated/${employee.empid}`,
-          data: {
-            empid: employee.empid,
-            isseparated: employee.isseparated,
-          },
-        });
-
-        this.showAlert(
-          `${employee.fullname} status updated to ${
-            employee.isseparated ? "Separated" : "Active"
-          } successfully!`,
-          "success"
-        );
-        // Refresh the table to show updated data
-        this.fetchEmployees();
-      } catch (error) {
-        console.error("Error updating employee status:", error);
-        const msg =
-          error?.response?.data?.error || "Failed to update employee status.";
-        this.showAlert("danger", msg);
-        employee.isseparated = !employee.isseparated;
-        employee.selected = !employee.selected;
       } finally {
         this.showLoading = false;
       }
@@ -2875,46 +2766,6 @@ export default {
   background: #ffffff;
 }
 
-.modern-filter-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.modern-search-group {
-  width: 350px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.modern-search-group input {
-  border: 1px solid #eef0f2;
-  height: 42px;
-}
-
-.modern-search-group .input-group-text {
-  background: white;
-  border: 1px solid #eef0f2;
-  border-right: none;
-}
-
-.filter-controls {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.modern-select-sm {
-  height: 38px;
-  border-radius: 8px;
-  border: 1px solid #eef0f2;
-  padding-right: 2rem;
-  font-size: 0.85rem;
-  color: #495057;
-}
-
 .seamless-toolbar {
   display: flex;
   justify-content: space-between;
@@ -2965,12 +2816,6 @@ export default {
   padding: 0;
 }
 
-.dropdown-scroll-panel {
-  max-height: 250px;
-  overflow-y: auto;
-  padding: 0.5rem 1rem;
-}
-
 .custom-check-primary ::v-deep .custom-control-label::before {
   border-color: #285ccc;
 }
@@ -3015,7 +2860,7 @@ export default {
 
 .employee-page {
   position: fixed;
-  top: 80px;
+  top: 40px;
   left: 50%;
   transform: translateX(-50%);
   width: 90vw;
@@ -3640,5 +3485,38 @@ export default {
   padding: 0;
   max-height: 80vh;
   overflow-y: auto;
+}
+
+.office-filter-group {
+  min-width: 320px;
+}
+
+.office-dropdown {
+  width: 100%;
+}
+
+.office-dropdown ::v-deep .btn,
+.type-dropdown ::v-deep .btn {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.dropdown-action-row {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem 1rem;
+  border-bottom: 1px solid #eef0f2;
+  margin-bottom: 0.25rem;
+}
+
+.dropdown-action-row .btn-link {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  text-decoration: none;
+}
+
+.dropdown-action-row .btn-link:hover {
+  text-decoration: underline;
 }
 </style>

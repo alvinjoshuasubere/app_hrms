@@ -39,7 +39,10 @@
                 <div class="filter-group">
                   <label class="filter-label">Period</label>
                   <div class="select-icon-wrapper">
-                    <font-awesome-icon icon="calendar-days" class="select-icon" />
+                    <font-awesome-icon
+                      icon="calendar-days"
+                      class="select-icon"
+                    />
                     <b-form-select
                       v-model="selectedPeriodId"
                       :options="periodOptions"
@@ -187,7 +190,20 @@ export default {
       return opts;
     },
     periodOptions() {
-      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      const months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
       return (this.periods || []).map((p) => {
         const sd = new Date(p.start_date);
         const ed = new Date(p.end_date);
@@ -240,7 +256,9 @@ export default {
           `${this.$axios.defaults.baseURL}/reports/get-all`,
           { params }
         );
-        this.employees = (Array.isArray(res.data) ? res.data : res.data.data || []).map(e => ({
+        this.employees = (
+          Array.isArray(res.data) ? res.data : res.data.data || []
+        ).map((e) => ({
           empno: e.IDNo,
           fullname: e.Name,
           deptdesc: e.Office,

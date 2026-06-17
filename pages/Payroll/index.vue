@@ -1,17 +1,17 @@
 <template>
   <div class="body">
     <main>
-      <EmployeeTable />
+      <PayrollTable />
     </main>
   </div>
 </template>
 
 <script>
-import EmployeeTable from "@/components/Employees/EmployeeTable";
+import PayrollTable from "@/components/Employees/PayrollTable";
 export default {
   // middleware: "pageValidator",
   components: {
-    EmployeeTable,
+    PayrollTable,
   },
   head() {
     return {
@@ -19,7 +19,7 @@ export default {
         {
           hid: "description",
           name: "description",
-          content: "Employees",
+          content: "Payroll",
         },
       ],
     };
