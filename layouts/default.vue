@@ -18,14 +18,10 @@
       <b-collapse id="main-nav-collapse" is-nav>
         <b-navbar-nav class="ml-3">
           <b-nav-item to="/employees" active-class="active">
-            <font-awesome-icon icon="users" class="mr-1" /> Employees
+            Employees
           </b-nav-item>
-          <b-nav-item to="/payroll" active-class="active">
-            <font-awesome-icon icon="file-invoice-dollar" class="mr-1" />
-            Payroll
-          </b-nav-item>
+          <b-nav-item to="/payroll" active-class="active"> Payroll </b-nav-item>
         </b-navbar-nav>
-
         <b-navbar-nav class="ml-auto">
           <b-button
             variant="outline-light"
@@ -76,7 +72,7 @@ export default {
 ::v-deep .nav-link.active {
   color: #fff !important;
   background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
   font-weight: 600;
+  border-bottom: 3px solid #fff2bd;
 }
 </style>

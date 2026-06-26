@@ -70,10 +70,6 @@ module.exports = {
     extend(config, ctx) {},
   },
 
-  env: {
-    fsqrURL: "https://rmrs-stopgap.biotechfarms.net/fsqr-api",
-  },
-
   server: {
     host: "0.0.0.0",
     port: 9000,

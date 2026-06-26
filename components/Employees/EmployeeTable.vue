@@ -59,8 +59,18 @@
                     >
                       <b-dropdown-header>Department</b-dropdown-header>
                       <div class="dropdown-action-row">
-                        <b-button size="sm" variant="link" @click="selectAllDepartments">All</b-button>
-                        <b-button size="sm" variant="link" @click="selectedDepartments = []">Clear</b-button>
+                        <b-button
+                          size="sm"
+                          variant="link"
+                          @click="selectAllDepartments"
+                          >All</b-button
+                        >
+                        <b-button
+                          size="sm"
+                          variant="link"
+                          @click="selectedDepartments = []"
+                          >Clear</b-button
+                        >
                       </div>
                       <b-dropdown-form class="dropdown-scroll-panel">
                         <b-form-checkbox
@@ -84,8 +94,18 @@
                         class="dropdown-scroll-panel"
                       >
                         <div class="dropdown-action-row">
-                          <b-button size="sm" variant="link" @click="selectAllDivisions">All</b-button>
-                          <b-button size="sm" variant="link" @click="selectedDivisions = []">Clear</b-button>
+                          <b-button
+                            size="sm"
+                            variant="link"
+                            @click="selectAllDivisions"
+                            >All</b-button
+                          >
+                          <b-button
+                            size="sm"
+                            variant="link"
+                            @click="selectedDivisions = []"
+                            >Clear</b-button
+                          >
                         </div>
                         <b-form-checkbox
                           v-for="div in sortedDivisions"
@@ -126,8 +146,18 @@
                     >
                       <b-dropdown-form class="dropdown-scroll-panel">
                         <div class="dropdown-action-row">
-                          <b-button size="sm" variant="link" @click="selectAllTypes">All</b-button>
-                          <b-button size="sm" variant="link" @click="selectedEmploymentStatuses = []">Clear</b-button>
+                          <b-button
+                            size="sm"
+                            variant="link"
+                            @click="selectAllTypes"
+                            >All</b-button
+                          >
+                          <b-button
+                            size="sm"
+                            variant="link"
+                            @click="selectedEmploymentStatuses = []"
+                            >Clear</b-button
+                          >
                         </div>
                         <b-form-checkbox
                           v-for="status in employmentStatusOptions"
@@ -213,6 +243,15 @@
               </div>
 
               <div class="toolbar-right">
+                <!-- <b-button
+                  size="sm"
+                  variant="primary"
+                  class="btn-elevated mr-2"
+                  @click="openAddModal"
+                >
+                  <font-awesome-icon icon="plus" class="mr-1" />
+                  Add Employee
+                </b-button> -->
                 <b-button
                   size="sm"
                   variant="dark"
@@ -277,36 +316,28 @@
                 }}
               </template>
               <template v-slot:cell(actions)="row">
-                <!-- <b-button
-                  size="sm"
-                 variant="primary"
-                  class="tableButton"
-                  @click="openEditModal(row.item)"
-                  v-b-tooltip.noninteractive.hover
-                  title="Update Employee"
-                >
-                  <font-awesome-icon icon="pen-to-square" />
-                </b-button> 
+                <div class="action-btn-group">
                   <b-button
-                  size="sm"
-                  variant="dark"
-                  class="tableButton"
-                  @click="generateCard(row.item)"
-                   v-b-tooltip.noninteractive.hover
-                  title="Generate Card"
-                >
-                  <font-awesome-icon icon="credit-card" />
-                </b-button>-->
-                <b-button
-                  size="sm"
-                  variant=""
-                  class="tableButton"
-                  @click="generateQRCode(row.item)"
-                  v-b-tooltip.noninteractive.hover
-                  title="Generate QR Code"
-                >
-                  <font-awesome-icon icon="qrcode" />
-                </b-button>
+                    size="sm"
+                    variant=""
+                    class="tableButton"
+                    @click="generateQRCode(row.item)"
+                    v-b-tooltip.noninteractive.hover
+                    title="Generate QR Code"
+                  >
+                    <font-awesome-icon icon="qrcode" />
+                  </b-button>
+                  <b-button
+                    size="sm"
+                    variant="success"
+                    class="tableButton"
+                    @click="openSignatureModal(row.item)"
+                    v-b-tooltip.noninteractive.hover
+                    title="Upload Signature"
+                  >
+                    <font-awesome-icon icon="signature" />
+                  </b-button>
+                </div>
               </template>
 
               <!-- QR select column: individual checkbox -->
@@ -600,6 +631,22 @@
                     <span class="emp-staff-kv-value">{{
                       formatCompleteAddress() || "—"
                     }}</span>
+                  </div>
+                  <div
+                    v-if="employeeDetails.imageSignature64"
+                    class="emp-staff-kv-full"
+                  >
+                    <span class="emp-staff-kv-label">Signature</span>
+                    <div class="signature-detail-wrapper">
+                      <b-button
+                        size="sm"
+                        variant="outline-primary"
+                        @click="openSignatureViewModal(employeeDetails.imageSignature64)"
+                      >
+                        <font-awesome-icon icon="signature" class="mr-1" />
+                        View Signature
+                      </b-button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -927,7 +974,11 @@
 
       <div class="qr-code-container" v-if="qrCodeEmployee">
         <div class="qr-code-wrapper">
-          <img :src="qrCodeUrl" alt="Employee QR Code" class="qr-code-image" />
+          <img
+            :src="qrCodeDataUrl"
+            alt="Employee QR Code"
+            class="qr-code-image"
+          />
         </div>
         <div class="qr-code-info">
           <h5>{{ qrCodeEmployee.fullname }}</h5>
@@ -1207,6 +1258,41 @@
               </b-form-group>
             </div>
           </div>
+
+          <!-- Signature Upload -->
+          <div class="form-section">
+            <h5 class="section-title">Signature</h5>
+            <div class="form-grid">
+              <b-form-group label="Signature Image">
+                <b-form-file
+                  v-model="signatureFile"
+                  accept="image/*"
+                  @input="onSignatureSelect"
+                  placeholder="Choose signature image..."
+                  drop-placeholder="Drop image here..."
+                />
+              </b-form-group>
+              <div
+                v-if="editEmployeeData.imageSignature64"
+                class="signature-preview-wrapper"
+              >
+                <img
+                  :src="formatSignatureSrc(editEmployeeData.imageSignature64)"
+                  class="signature-preview-img"
+                  alt="Signature preview"
+                  @error="editEmployeeData.imageSignature64 = null"
+                />
+                <b-button
+                  size="sm"
+                  variant="outline-danger"
+                  class="mt-2"
+                  @click="removeSignature"
+                >
+                  <font-awesome-icon icon="trash" class="mr-1" />Remove
+                </b-button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1336,14 +1422,18 @@
         </div>
       </template>
 
-      <div class="multi-qr-grid">
+      <div v-if="isGeneratingMultiQR" class="text-center py-4">
+        <b-spinner variant="primary" label="Loading"></b-spinner>
+        <p class="mt-2 mb-0">Generating QR codes...</p>
+      </div>
+      <div v-else class="multi-qr-grid">
         <div
           v-for="emp in selectedForQR"
           :key="emp.empid"
           class="multi-qr-card"
         >
           <img
-            :src="getEmployeeQRUrl(emp)"
+            :src="multiQRDataUrls[emp.empid]"
             :alt="emp.fullname"
             class="multi-qr-image"
           />
@@ -1388,6 +1478,113 @@
       </template>
     </b-modal>
 
+    <!-- Signature Upload Modal -->
+    <b-modal
+      header-class="hrmsColor"
+      v-model="showSignatureModal"
+      size="md"
+      centered
+      no-close-on-backdrop
+      @hidden="resetSignatureModal"
+    >
+      <template #modal-title>
+        <div class="modal-title-header">
+          <div class="modal-title-icon">
+            <font-awesome-icon icon="signature" />
+          </div>
+          <div class="modal-title-text">
+            <span class="modal-title-main text-left">Upload Signature</span>
+            <span class="modal-title-desc" v-if="signatureUploadTarget">
+              {{ signatureUploadTarget.fullname }} ({{
+                signatureUploadTarget.empno
+              }})
+            </span>
+          </div>
+        </div>
+      </template>
+
+      <div class="signature-modal-body">
+        <b-alert
+          :show="signatureAlert.dismissCountDown"
+          dismissible
+          :variant="signatureAlert.variant"
+          @dismissed="signatureAlert.dismissCountDown = 0"
+          class="mb-3"
+        >
+          <font-awesome-icon
+            :icon="
+              signatureAlert.variant === 'success'
+                ? 'circle-check'
+                : 'circle-exclamation'
+            "
+            class="mr-2"
+          />
+          {{ signatureAlert.message }}
+        </b-alert>
+
+        <b-form-group>
+          <b-form-file
+            v-model="signatureModalFile"
+            accept="image/*"
+            @input="onSignatureModalFileSelect"
+            placeholder="Choose signature image..."
+            drop-placeholder="Drop image here..."
+          />
+        </b-form-group>
+
+        <div v-if="signaturePreviewUrl" class="signature-modal-preview">
+          <label class="text-muted small">Preview:</label>
+          <img :src="signaturePreviewUrl" alt="Signature preview" />
+        </div>
+      </div>
+
+      <template #modal-footer>
+        <b-button
+          size="sm"
+          variant="primary"
+          class="mr-2"
+          :disabled="!signaturePreviewUrl || isUploadingSignature"
+          @click="confirmSignatureUpload"
+        >
+          <font-awesome-icon
+            icon="spinner"
+            v-if="isUploadingSignature"
+            spin
+            class="mr-1"
+          />
+          <font-awesome-icon icon="upload" v-else class="mr-1" />
+          {{ isUploadingSignature ? "Uploading..." : "Upload" }}
+        </b-button>
+        <b-button
+          size="sm"
+          variant="outline-dark"
+          @click="showSignatureModal = false"
+        >
+          Cancel
+        </b-button>
+      </template>
+    </b-modal>
+
+    <!-- Signature View Modal -->
+    <b-modal
+      id="signature-view-modal"
+      header-class="hrmsColor"
+      size="md"
+      centered
+      title="Employee Signature"
+      ok-only
+      ok-title="Close"
+      ok-variant="outline-dark"
+    >
+      <div class="text-center p-3" v-if="signatureViewDataUrl">
+        <img
+          :src="formatSignatureSrc(signatureViewDataUrl)"
+          class="signature-view-img"
+          alt="Employee signature"
+        />
+      </div>
+    </b-modal>
+
     <div v-if="alert.showAlert > 0" class="alert-container">
       <b-alert
         :show="alert.showAlert"
@@ -1416,6 +1613,7 @@ import "jspdf-autotable";
 import vSelect from "vue-select";
 import "vue-select/dist/vue-select.css";
 import JSZip from "jszip";
+import QRCode from "qrcode";
 
 export default {
   components: { Loading, vSelect },
@@ -1456,6 +1654,9 @@ export default {
       departments: [],
       formDriver: {},
       qrCodeEmployee: null,
+      qrCodeDataUrl: null,
+      multiQRDataUrls: {},
+      isGeneratingMultiQR: false,
       // File maintenance reference data
       divisions: [],
       positions: [],
@@ -1479,6 +1680,18 @@ export default {
       // Edit modal
       showEditModal: false,
       editEmployeeData: null,
+      signatureFile: null,
+      signatureUploadTarget: null,
+      showSignatureModal: false,
+      signatureModalFile: null,
+      signaturePreviewUrl: null,
+      isUploadingSignature: false,
+      signatureViewDataUrl: null,
+      signatureAlert: {
+        dismissCountDown: 0,
+        variant: "",
+        message: "",
+      },
       showStaffQuickEditModal: false,
       staffQuickEditForm: null,
       selectedForQR: [],
@@ -1529,6 +1742,12 @@ export default {
         {
           key: "isseparated",
           label: "Status",
+          sortable: false,
+          class: "text-center",
+        },
+        {
+          key: "isApprover",
+          label: "Approver",
           sortable: false,
           class: "text-center",
         },
@@ -1592,7 +1811,6 @@ export default {
           this.selectedEmploymentStatuses.includes(employee.EmploymentStatus)
         );
       }
-
       return filtered;
     },
     isAllQRSelected() {
@@ -1695,12 +1913,6 @@ export default {
       if (!this.qrCodeEmployee) return "";
       return `https://employee.koronadalcityonlineservices.com/${this.qrCodeEmployee.empid}`;
     },
-    qrCodeUrl() {
-      if (!this.qrCodeEmployee) return "";
-      return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-        this.employeeProfileLink
-      )}&bgcolor=ffffff&color=000000`;
-    },
     // Computed options for edit modal
     genderOptions() {
       return this.genders.map((gender) => ({
@@ -1780,11 +1992,11 @@ export default {
       this.searchText = "";
     },
     selectAllDepartments() {
-      this.selectedDepartments = this.sortedDepartments.map(d => d.deptdesc);
+      this.selectedDepartments = this.sortedDepartments.map((d) => d.deptdesc);
       this.onDepartmentChange();
     },
     selectAllDivisions() {
-      this.selectedDivisions = this.sortedDivisions.map(d => d.division_desc);
+      this.selectedDivisions = this.sortedDivisions.map((d) => d.division_desc);
       this.onDivisionChange();
     },
     selectAllTypes() {
@@ -2123,15 +2335,24 @@ export default {
     },
     generateQRCode(employee) {
       this.qrCodeEmployee = employee;
-      this.$bvModal.show("qr-code-modal");
+      this.generateQRDataUrl(employee).then((url) => {
+        this.qrCodeDataUrl = url;
+        this.$bvModal.show("qr-code-modal");
+      });
     },
-    getEmployeeQRUrl(employee) {
+    async generateQRDataUrl(employee) {
       const profileLink = `https://employee.koronadalcityonlineservices.com/${employee.empid}`;
-      return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-        profileLink
-      )}&bgcolor=ffffff&color=000000`;
+      try {
+        return await QRCode.toDataURL(profileLink, {
+          width: 400,
+          margin: 2,
+          color: { dark: "#000000", light: "#ffffff" },
+        });
+      } catch {
+        return "";
+      }
     },
-    openMultipleQRModal() {
+    async openMultipleQRModal() {
       if (this.selectedForQR.length === 0) {
         this.showAlert(
           "warning",
@@ -2139,23 +2360,29 @@ export default {
         );
         return;
       }
+      this.isGeneratingMultiQR = true;
+      this.multiQRDataUrls = {};
+      const entries = await Promise.all(
+        this.selectedForQR.map(async (emp) => {
+          const url = await this.generateQRDataUrl(emp);
+          return [emp.empid, url];
+        })
+      );
+      this.multiQRDataUrls = Object.fromEntries(entries);
+      this.isGeneratingMultiQR = false;
       this.showMultipleQRModal = true;
     },
     async downloadSingleQR(employee) {
       try {
-        const url = this.getEmployeeQRUrl(employee);
-        const response = await fetch(url);
-        const blob = await response.blob();
-        const objectUrl = URL.createObjectURL(blob);
+        const dataUrl = await this.generateQRDataUrl(employee);
         const link = document.createElement("a");
-        link.href = objectUrl;
+        link.href = dataUrl;
         link.download = `QR_${employee.fullname.replace(/\s+/g, "_")}_${
           employee.empno
         }.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(objectUrl);
       } catch (error) {
         console.error("Error downloading QR code:", error);
         this.showAlert(
@@ -2171,17 +2398,16 @@ export default {
         const zip = new JSZip();
         const folder = zip.folder("QR_Codes");
 
-        // Fetch all QR images in parallel
         await Promise.all(
           this.selectedForQR.map(async (employee) => {
-            const url = this.getEmployeeQRUrl(employee);
-            const response = await fetch(url);
-            const blob = await response.blob();
-            const arrayBuffer = await blob.arrayBuffer();
+            const dataUrl = await this.generateQRDataUrl(employee);
+            const base64 = dataUrl.split(",")[1];
             const safeName = employee.fullname
               .replace(/\s+/g, "_")
               .replace(/[^a-zA-Z0-9_-]/g, "");
-            folder.file(`QR_${safeName}_${employee.empno}.png`, arrayBuffer);
+            folder.file(`QR_${safeName}_${employee.empno}.png`, base64, {
+              base64: true,
+            });
           })
         );
 
@@ -2189,7 +2415,7 @@ export default {
         const objectUrl = URL.createObjectURL(zipBlob);
         const link = document.createElement("a");
         link.href = objectUrl;
-        link.download = `QR_Codes_${this.selectedForQR.length}_employees.zip`;
+        link.download = `${this.selectedForQR.length}_employees.zip`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -2210,20 +2436,15 @@ export default {
       if (!this.qrCodeEmployee) return;
 
       try {
-        const response = await fetch(this.qrCodeUrl);
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-
         const link = document.createElement("a");
-        link.href = url;
-        link.download = `QR_Code_${this.qrCodeEmployee.fullname.replace(
+        link.href = this.qrCodeDataUrl;
+        link.download = `${this.qrCodeEmployee.fullname.replace(
           /\s+/g,
           "_"
         )}.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(url);
 
         this.showAlert("QR Code downloaded successfully!", "success");
       } catch (error) {
@@ -2238,6 +2459,98 @@ export default {
     closeEditModal() {
       this.showEditModal = false;
       this.editEmployeeData = null;
+      this.signatureFile = null;
+    },
+    onSignatureSelect(file) {
+      if (!file) {
+        this.editEmployeeData.imageSignature64 = null;
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.editEmployeeData.imageSignature64 = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+    removeSignature() {
+      this.signatureFile = null;
+      this.editEmployeeData.imageSignature64 = null;
+    },
+    openSignatureModal(employee) {
+      this.signatureUploadTarget = employee;
+      this.signatureModalFile = null;
+      this.signaturePreviewUrl = null;
+      this.showSignatureModal = true;
+    },
+    onSignatureModalFileSelect(file) {
+      if (!file) {
+        this.signaturePreviewUrl = null;
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.signaturePreviewUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+    formatSignatureSrc(val) {
+      if (!val) return "";
+      if (val.startsWith("data:image")) return val;
+      return "data:image/png;base64," + val;
+    },
+    openSignatureViewModal(dataUrl) {
+      this.signatureViewDataUrl = dataUrl;
+      this.$bvModal.show("signature-view-modal");
+    },
+    resetSignatureModal() {
+      this.signatureModalFile = null;
+      this.signaturePreviewUrl = null;
+      this.signatureUploadTarget = null;
+      this.isUploadingSignature = false;
+      this.signatureAlert.dismissCountDown = 0;
+    },
+    async confirmSignatureUpload() {
+      if (!this.signatureModalFile || !this.signatureUploadTarget) return;
+      this.isUploadingSignature = true;
+      this.signatureAlert.dismissCountDown = 0;
+      try {
+        this.showLoading = true;
+        const formData = new FormData();
+        formData.append("file", this.signatureModalFile);
+        const res = await axios({
+          method: "PUT",
+          url: `${this.$axios.defaults.baseURL}/employees/upload-signature/${this.signatureUploadTarget.empid}`,
+          data: formData,
+        });
+        const sigUrl =
+          res.data?.imageSignature64 || res.data?.url || this.signaturePreviewUrl;
+        this.signatureAlert = {
+          variant: "success",
+          message: "Signature uploaded successfully!",
+          dismissCountDown: 3,
+        };
+        if (
+          this.employeeDetails &&
+          this.employeeDetails.empid === this.signatureUploadTarget.empid
+        ) {
+          this.employeeDetails.imageSignature64 = sigUrl;
+        }
+        this.fetchEmployees();
+        setTimeout(() => {
+          this.showSignatureModal = false;
+        }, 1500);
+      } catch (error) {
+        const msg =
+          error?.response?.data?.error || "Failed to upload signature.";
+        this.signatureAlert = {
+          variant: "danger",
+          message: msg,
+          dismissCountDown: 5,
+        };
+      } finally {
+        this.showLoading = false;
+        this.isUploadingSignature = false;
+      }
     },
     async updateEmployee() {
       if (!this.editEmployeeData) return;
@@ -2879,6 +3192,11 @@ export default {
   padding: 4px;
 }
 
+.action-btn-group {
+  display: flex;
+  gap: 2px;
+}
+
 .employee-thumbnail {
   width: 40px;
   height: 40px;
@@ -3518,5 +3836,56 @@ export default {
 
 .dropdown-action-row .btn-link:hover {
   text-decoration: underline;
+}
+
+/* Signature Upload */
+.signature-preview-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.signature-preview-img {
+  max-width: 240px;
+  max-height: 80px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 8px;
+  background: #fafafa;
+  object-fit: contain;
+}
+
+.signature-view-img {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  background: #fafafa;
+}
+
+/* Signature Upload Modal */
+.signature-modal-body {
+  padding: 1.25rem;
+}
+
+.signature-modal-preview {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.signature-modal-preview img {
+  max-width: 100%;
+  max-height: 200px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fafafa;
+  object-fit: contain;
 }
 </style>
