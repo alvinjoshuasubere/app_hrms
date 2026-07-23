@@ -17,6 +17,9 @@
 
       <b-collapse id="main-nav-collapse" is-nav>
         <b-navbar-nav class="ml-3">
+          <b-nav-item to="/dashboard" active-class="active">
+            Dashboard
+          </b-nav-item>
           <b-nav-item to="/employees" active-class="active">
             Employees
           </b-nav-item>

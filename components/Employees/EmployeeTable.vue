@@ -283,10 +283,13 @@
               <template v-slot:cell(image)="row">
                 <div class="employee-photo-cell">
                   <img
-                    :src="row.item.photo_url || '/user.jpg'"
+                    :src="
+                      formatSignatureSrc(
+                        row.item.photo64 || row.item.photo_url
+                      ) || '/user.jpg'
+                    "
                     :alt="row.item.fullname"
                     class="employee-thumbnail"
-                    @error="handleImageError"
                   />
                 </div>
               </template>
@@ -326,6 +329,16 @@
                     title="Generate QR Code"
                   >
                     <font-awesome-icon icon="qrcode" />
+                  </b-button>
+                  <b-button
+                    size="sm"
+                    variant="primary"
+                    class="tableButton"
+                    @click="openNationalIDModal(row.item)"
+                    v-b-tooltip.noninteractive.hover
+                    title="Generate ID Card"
+                  >
+                    <font-awesome-icon icon="id-card" />
                   </b-button>
                   <b-button
                     size="sm"
@@ -427,7 +440,10 @@
         <!-- ── QR Code ── -->
         <div class="id-qr">
           <img
-            :src="`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${formDriver.empno}&bgcolor=ffffff&color=000000`"
+            :src="
+              oldIdQrDataUrl ||
+              `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${formDriver.empno}&bgcolor=ffffff&color=000000`
+            "
             alt="QR Code"
             class="id-qr-img"
           />
@@ -471,6 +487,51 @@
       </template>
     </b-modal>
 
+    <!-- National ID Card Modal -->
+    <b-modal
+      v-model="showNationalIDModal"
+      id="national-id-modal"
+      title="Employee ID"
+      size="lg"
+      centered
+      header-class="hrmsColor"
+      body-class="p-2"
+      no-close-on-backdrop
+    >
+      <NationalIDCard
+        v-if="nationalIDEmployee"
+        :empid="nationalIDEmployee.empid || nationalIDEmployee.empno"
+        ref="nationalIDCardRef"
+      />
+      <template #modal-footer>
+        <b-button
+          size="sm"
+          variant="primary"
+          @click="printNationalIDCard()"
+          :disabled="isPrintingNationalID"
+        >
+          <font-awesome-icon
+            icon="spinner"
+            v-if="isPrintingNationalID"
+            spin
+            class="mr-1"
+          />
+          <font-awesome-icon icon="print" v-else class="mr-1" />
+          {{ isPrintingNationalID ? "Printing..." : "Print Card" }}
+        </b-button>
+        <b-button size="sm" variant="success" @click="downloadNationalIDCard()">
+          <font-awesome-icon icon="download" class="mr-1" /> Download ID
+        </b-button>
+        <b-button
+          size="sm"
+          variant="outline-dark"
+          @click="showNationalIDModal = false"
+        >
+          Close
+        </b-button>
+      </template>
+    </b-modal>
+
     <!-- Employee Details Modal -->
     <b-modal
       v-model="showEmployeeModal"
@@ -494,16 +555,31 @@
       <div v-if="employeeDetails" class="emp-staff-modal text-left">
         <!-- Summary card (hrment-style) -->
         <div class="emp-staff-summary-card">
-          <div class="emp-staff-summary-avatar">
-            <img
-              v-if="employeeDetails.photo_url && !profilePhotoFailed"
-              :src="employeeDetails.photo_url"
-              :alt="employeeDetails.fullname"
-              @error="profilePhotoFailed = true"
-            />
-            <div v-else class="emp-staff-summary-initials">
-              {{ getInitials(employeeDetails.fullname) }}
+          <div class="emp-staff-summary-avatar-wrapper">
+            <div class="emp-staff-summary-avatar">
+              <img
+                v-if="employeeDetails.photo64"
+                :src="formatSignatureSrc(employeeDetails.photo64)"
+              />
+              <div v-else class="emp-staff-summary-initials">
+                {{ getInitials(employeeDetails.fullname) }}
+              </div>
             </div>
+            <button
+              type="button"
+              class="emp-staff-avatar-upload-btn"
+              @click="$refs.profileImageInput.click()"
+              title="Upload profile picture"
+            >
+              <font-awesome-icon icon="camera" />
+            </button>
+            <input
+              ref="profileImageInput"
+              type="file"
+              accept="image/*"
+              class="d-none"
+              @change="onProfileImageSelect"
+            />
           </div>
           <div class="emp-staff-summary-main">
             <h1 class="emp-staff-summary-name">
@@ -539,7 +615,7 @@
               <div class="emp-staff-meta-block">
                 <span class="emp-staff-meta-label">Phone number</span>
                 <span class="emp-staff-meta-value">{{
-                  employeeDetails.cell_no || "—"
+                  employeeDetails.cellno || "—"
                 }}</span>
               </div>
               <div class="emp-staff-meta-block">
@@ -549,6 +625,56 @@
                 }}</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div v-if="profileImagePreviewUrl" class="profile-crop-section">
+          <b-alert
+            :show="profileImageAlert.dismissCountDown"
+            dismissible
+            :variant="profileImageAlert.variant"
+            @dismissed="profileImageAlert.dismissCountDown = 0"
+            class="mb-3"
+          >
+            <font-awesome-icon
+              :icon="
+                profileImageAlert.variant === 'success'
+                  ? 'circle-check'
+                  : 'circle-exclamation'
+              "
+              class="mr-2"
+            />
+            {{ profileImageAlert.message }}
+          </b-alert>
+
+          <label class="text-muted small mb-2 d-block">Preview:</label>
+          <div class="profile-crop-preview">
+            <img :src="profileImagePreviewUrl" alt="Profile preview" />
+          </div>
+          <div class="profile-crop-actions mt-3">
+            <b-button
+              size="sm"
+              variant="primary"
+              class="mr-2"
+              :disabled="isUploadingProfileImage"
+              @click="confirmProfileImageUpload"
+            >
+              <font-awesome-icon
+                icon="spinner"
+                v-if="isUploadingProfileImage"
+                spin
+                class="mr-1"
+              />
+              <font-awesome-icon icon="upload" v-else class="mr-1" />
+              {{ isUploadingProfileImage ? "Uploading..." : "Upload" }}
+            </b-button>
+            <b-button
+              size="sm"
+              variant="outline-dark"
+              @click="cancelProfileImageCrop"
+            >
+              Cancel
+            </b-button>
           </div>
         </div>
 
@@ -641,7 +767,11 @@
                       <b-button
                         size="sm"
                         variant="outline-primary"
-                        @click="openSignatureViewModal(employeeDetails.imageSignature64)"
+                        @click="
+                          openSignatureViewModal(
+                            employeeDetails.imageSignature64
+                          )
+                        "
                       >
                         <font-awesome-icon icon="signature" class="mr-1" />
                         View Signature
@@ -867,65 +997,131 @@
     <b-modal
       id="employee-staff-quick-edit-modal"
       v-model="showStaffQuickEditModal"
-      title="Edit assignment"
       header-class="hrmsColor"
       modal-class="staff-quick-edit-modal"
       size="lg"
       centered
+      scrollable
       body-class="p-0"
-      @hidden="staffQuickEditForm = null"
+      @hidden="onQuickEditModalHidden"
     >
-      <div v-if="staffQuickEditForm" class="staff-quick-edit text-left">
-        <p class="staff-quick-edit-hint text-muted small">
-          You can change department, division, position, and status here. More
-          fields will be added later.
-        </p>
-        <b-form
-          class="staff-quick-edit-fields"
-          @submit.prevent="saveStaffQuickEdit"
-        >
-          <b-form-group label="Department" label-for="sqe-dept">
-            <v-select
-              id="sqe-dept"
-              v-model="staffQuickEditForm.deptdesc"
-              :options="staffDeptOptionsForVueSelect"
-              placeholder="Select department"
-              :clearable="true"
-              :searchable="true"
-              :append-to-body="true"
-              class="staff-quick-dept-vselect"
-            />
-          </b-form-group>
-          <b-form-group label="Division" label-for="sqe-div">
-            <b-form-input
-              id="sqe-div"
-              v-model="staffQuickEditForm.divisiondesc"
-              placeholder="Division (optional)"
-            />
-          </b-form-group>
-          <b-form-group label="Position" label-for="sqe-pos">
-            <b-form-input
-              id="sqe-pos"
-              v-model="staffQuickEditForm.position_desc"
-              placeholder="Job title / position"
-            />
-          </b-form-group>
-          <b-form-group label="Separation status" label-for="sqe-sep">
-            <b-form-select
-              id="sqe-sep"
-              v-model="staffQuickEditForm.separation"
-              :options="staffSeparationSelectOptions"
-            />
-          </b-form-group>
-          <b-form-group label="Employment status" label-for="sqe-empst">
-            <b-form-select
-              id="sqe-empst"
-              v-model="staffQuickEditForm.employmentStatus"
-              :options="staffEmploymentStatusSelectOptions"
-            />
-          </b-form-group>
+      <template #modal-title>
+        <div class="modal-title-header">
+          <div class="modal-title-icon">
+            <font-awesome-icon icon="pen-to-square" />
+          </div>
+          <div class="modal-title-text">
+            <span class="modal-title-main text-left">Edit Details</span>
+            <span class="modal-title-desc"
+              >Update assignment and emergency contact</span
+            >
+          </div>
+        </div>
+      </template>
+
+      <div v-if="staffQuickEditForm" class="sqe-container">
+        <b-form class="sqe-form" @submit.prevent="saveStaffQuickEdit">
+          <!-- Work Assignment -->
+          <div class="sqe-section">
+            <div class="sqe-section-header">
+              <div class="sqe-section-icon-wrap sqe-section-icon--blue">
+                <font-awesome-icon icon="briefcase" />
+              </div>
+              <h5 class="sqe-section-title">Work Assignment</h5>
+            </div>
+            <div class="sqe-section-body">
+              <div class="sqe-form-grid sqe-form-grid--2col sqe-text-left">
+                <b-form-group label="Department" label-for="sqe-dept">
+                  <v-select
+                    id="sqe-dept"
+                    v-model="staffQuickEditForm.deptdesc"
+                    :options="staffDeptOptionsForVueSelect"
+                    placeholder="Select department"
+                    :clearable="true"
+                    :searchable="true"
+                    :append-to-body="true"
+                    disabled
+                    class="sqe-vselect"
+                  />
+                </b-form-group>
+                <b-form-group label="Division" label-for="sqe-div">
+                  <v-select
+                    id="sqe-div"
+                    v-model="staffQuickEditForm.divisiondesc"
+                    :options="staffDivOptionsForVueSelect"
+                    placeholder="Select division"
+                    :clearable="true"
+                    :searchable="true"
+                    :append-to-body="true"
+                    class="sqe-vselect"
+                    disabled
+                  />
+                </b-form-group>
+                <b-form-group label="Position" label-for="sqe-pos">
+                  <b-form-input
+                    id="sqe-pos"
+                    v-model="staffQuickEditForm.position_desc"
+                    placeholder="Job title / position"
+                    disabled
+                  />
+                </b-form-group>
+                <b-form-group label="Employment Status" label-for="sqe-empst">
+                  <b-form-select
+                    id="sqe-empst"
+                    v-model="staffQuickEditForm.employmentStatus"
+                    :options="staffEmploymentStatusSelectOptions"
+                    disabled
+                  />
+                </b-form-group>
+                <b-form-group label="Separation Status" label-for="sqe-sep">
+                  <b-form-select
+                    id="sqe-sep"
+                    v-model="staffQuickEditForm.separation"
+                    :options="staffSeparationSelectOptions"
+                    disabled
+                  />
+                </b-form-group>
+              </div>
+            </div>
+          </div>
+
+          <!-- Emergency Contact -->
+          <div class="sqe-section">
+            <div class="sqe-section-header">
+              <div class="sqe-section-icon-wrap sqe-section-icon--red">
+                <font-awesome-icon icon="phone-volume" />
+              </div>
+              <h5 class="sqe-section-title">Emergency Contact</h5>
+            </div>
+            <div class="sqe-section-body">
+              <div class="sqe-form-grid sqe-form-grid--3col sqe-text-left">
+                <b-form-group label="Name" label-for="sqe-ename">
+                  <b-form-input
+                    id="sqe-ename"
+                    v-model="staffQuickEditForm.emergency_name"
+                    placeholder="Contact name"
+                  />
+                </b-form-group>
+                <b-form-group label="Relation" label-for="sqe-erel">
+                  <b-form-input
+                    id="sqe-erel"
+                    v-model="staffQuickEditForm.emergency_relation"
+                    placeholder="Relationship"
+                  />
+                </b-form-group>
+                <b-form-group label="Contact Number" label-for="sqe-econ">
+                  <b-form-input
+                    id="sqe-econ"
+                    v-model="staffQuickEditForm.emergency_contact"
+                    placeholder="Phone number"
+                  />
+                </b-form-group>
+              </div>
+            </div>
+          </div>
         </b-form>
       </div>
+
       <template #modal-footer>
         <div class="staff-quick-edit-footer">
           <b-button
@@ -942,7 +1138,7 @@
             @click="saveStaffQuickEdit"
           >
             <font-awesome-icon icon="save" class="mr-1" />
-            Save
+            Save Changes
           </b-button>
         </div>
       </template>
@@ -1522,19 +1718,74 @@
           {{ signatureAlert.message }}
         </b-alert>
 
-        <b-form-group>
-          <b-form-file
-            v-model="signatureModalFile"
-            accept="image/*"
-            @input="onSignatureModalFileSelect"
-            placeholder="Choose signature image..."
-            drop-placeholder="Drop image here..."
-          />
-        </b-form-group>
+        <!-- Draw / Upload toggle -->
+        <div class="sig-mode-toggle">
+          <button
+            type="button"
+            class="sig-mode-btn"
+            :class="{ 'sig-mode-btn--active': signaturePadMode === 'draw' }"
+            @click="switchSignatureMode('draw')"
+          >
+            <font-awesome-icon icon="pen" class="mr-1" />
+            Draw
+          </button>
+          <button
+            type="button"
+            class="sig-mode-btn"
+            :class="{ 'sig-mode-btn--active': signaturePadMode === 'upload' }"
+            @click="switchSignatureMode('upload')"
+          >
+            <font-awesome-icon icon="upload" class="mr-1" />
+            Upload
+          </button>
+        </div>
 
-        <div v-if="signaturePreviewUrl" class="signature-modal-preview">
-          <label class="text-muted small">Preview:</label>
-          <img :src="signaturePreviewUrl" alt="Signature preview" />
+        <!-- Draw mode -->
+        <div v-show="signaturePadMode === 'draw'" class="sig-draw-area">
+          <div class="sig-canvas-wrapper">
+            <canvas
+              ref="signatureCanvas"
+              class="sig-canvas"
+              width="460"
+              height="180"
+              @mousedown="startDrawing"
+              @mousemove="draw"
+              @mouseup="stopDrawing"
+              @mouseleave="stopDrawing"
+              @touchstart.prevent="startDrawingTouch"
+              @touchmove.prevent="drawTouch"
+              @touchend="stopDrawing"
+            />
+          </div>
+          <div class="sig-draw-actions">
+            <b-button
+              size="sm"
+              variant="outline-danger"
+              @click="clearSignaturePad"
+            >
+              <font-awesome-icon icon="eraser" class="mr-1" />
+              Clear
+            </b-button>
+            <small class="text-muted">Sign inside the box above</small>
+          </div>
+        </div>
+
+        <!-- Upload mode -->
+        <div v-show="signaturePadMode === 'upload'" class="sig-upload-area">
+          <b-form-group>
+            <b-form-file
+              v-model="signatureModalFile"
+              accept="image/*"
+              @input="onSignatureModalFileSelect"
+              placeholder="Choose signature image..."
+              drop-placeholder="Drop image here..."
+            />
+          </b-form-group>
+
+          <div v-if="signaturePreviewUrl" class="signature-modal-preview">
+            <label class="text-muted small">Preview:</label>
+            <img :src="signaturePreviewUrl" alt="Signature preview" />
+          </div>
         </div>
       </div>
 
@@ -1543,7 +1794,10 @@
           size="sm"
           variant="primary"
           class="mr-2"
-          :disabled="!signaturePreviewUrl || isUploadingSignature"
+          :disabled="
+            (!signaturePadDataUrl && !signaturePreviewUrl) ||
+            isUploadingSignature
+          "
           @click="confirmSignatureUpload"
         >
           <font-awesome-icon
@@ -1614,9 +1868,11 @@ import vSelect from "vue-select";
 import "vue-select/dist/vue-select.css";
 import JSZip from "jszip";
 import QRCode from "qrcode";
+import NationalIDCard from "~/components/Print/NationalIDCard.vue";
+import html2canvas from "html2canvas";
 
 export default {
-  components: { Loading, vSelect },
+  components: { Loading, vSelect, NationalIDCard },
   data() {
     return {
       showLoading: false,
@@ -1653,6 +1909,7 @@ export default {
       profilePhotoFailed: false,
       departments: [],
       formDriver: {},
+      oldIdQrDataUrl: "",
       qrCodeEmployee: null,
       qrCodeDataUrl: null,
       multiQRDataUrls: {},
@@ -1692,8 +1949,24 @@ export default {
         variant: "",
         message: "",
       },
+      signaturePadMode: "draw",
+      signaturePadDataUrl: null,
+      isDrawing: false,
+      drawingCtx: null,
       showStaffQuickEditModal: false,
+      profileImageFile: null,
+      profileImagePreviewUrl: null,
+      isUploadingProfileImage: false,
+      profileImageAlert: {
+        dismissCountDown: 0,
+        variant: "",
+        message: "",
+      },
+      showNationalIDModal: false,
+      isPrintingNationalID: false,
+      nationalIDEmployee: null,
       staffQuickEditForm: null,
+      quickEditDivisions: [],
       selectedForQR: [],
       showConfirmModal: false,
       showMultipleQRModal: false,
@@ -2102,12 +2375,8 @@ export default {
       );
       const matchedDivision = this.divisions.find(
         (division) =>
-          String(
-            division.division_desc ||
-              division.divisionname ||
-              division.divisiondesc
-          ).trim() ===
-          String(e.divisiondesc || e.division_desc || e.division || "").trim()
+          String(division.division_desc).trim() ===
+          String(e.division_desc || "").trim()
       );
       const matchedPosition = this.positions.find(
         (position) =>
@@ -2118,24 +2387,23 @@ export default {
       const matchedStatus = this.employmentStatuses.find(
         (status) => String(status.value).trim() === String(empSt).trim()
       );
-
+      console.log(matchedDivision);
       this.staffQuickEditForm = {
         empid: e.empid,
         empno: e.empno,
         deptid: matchedDept ? matchedDept.deptid : null,
         deptdesc: e.deptdesc || "",
         division_key: matchedDivision ? matchedDivision.division_key : null,
-        divisiondesc: e.divisiondesc || e.division_desc || e.division || "",
+        divisiondesc: matchedDivision ? matchedDivision.division_desc : "",
         position_key: matchedPosition ? matchedPosition.position_key : null,
         position_desc: e.position_desc || "",
         separation: e.isseparated ? "separated" : "active",
-        empstat_key: matchedStatus ? matchedStatus.empstat_key : null,
+        empstat_key: e.employmentStatus || null,
         employmentStatus: empSt,
+        emergency_name: e.emergency_name || "",
+        emergency_contact: e.emergency_contact || "",
+        emergency_relation: e.emergency_relation || "",
       };
-
-      if (this.staffQuickEditForm.deptid) {
-        this.fetchDivisionsByDepartment(this.staffQuickEditForm.deptid);
-      }
 
       this.showStaffQuickEditModal = true;
     },
@@ -2174,13 +2442,14 @@ export default {
         const selectedDept = this.departments.find(
           (dept) => String(dept.deptdesc).trim() === String(f.deptdesc).trim()
         );
-        const selectedDivision = this.divisions.find(
+        const selectedDivision = this.quickEditDivisions.find(
           (division) =>
             String(
-              division.division_desc ||
-                division.divisionname ||
-                division.divisiondesc
-            ).trim() === String(f.divisiondesc || "").trim()
+              division.division_desc || division.divisiondesc || ""
+            ).trim() ===
+              String(f.divisiondesc || f.division_desc || "").trim() &&
+            String(division.deptid || division.dept_id || "").trim() ===
+              String(selectedDept?.deptid || f.deptid || "").trim()
         );
         const selectedPosition = this.positions.find(
           (position) =>
@@ -2194,24 +2463,28 @@ export default {
           (status) =>
             String(status.value).trim() === String(f.employmentStatus).trim()
         );
-
+        console.log(f.employmentStatus, selectedStatus, "ASDASDASDAS");
         await axios({
           method: "PUT",
           url: `${this.$axios.defaults.baseURL}/employees/update-one-emp-temporary/${f.empid}`,
           data: {
             deptid: f.deptid || selectedDept?.deptid || null,
             division_key:
-              f.division_key || selectedDivision?.division_key || null,
+              selectedDivision?.division_key || f.division_key || null,
             position_key:
               f.position_key || selectedPosition?.position_key || null,
-            empstat_key: f.empstat_key || selectedStatus?.empstat_key || null,
+            empstat_key: selectedStatus.empstat_key || null,
+            empstat_name: selectedStatus ? selectedStatus.value : null,
+            emergency_name: f.emergency_name || "",
+            emergency_relation: f.emergency_relation || "",
+            emergency_contact: f.emergency_contact || "",
           },
         });
-        this.showAlert("Assignment updated successfully.", "success");
+        this.showAlert("Details updated successfully.", "success");
         this.showStaffQuickEditModal = false;
         this.staffQuickEditForm = null;
         await this.refetchEmployeeDetails();
-        this.fetchEmployees();
+        await this.fetchEmployees();
       } catch (error) {
         console.error("Error saving quick edit:", error);
         const msg =
@@ -2222,6 +2495,10 @@ export default {
       } finally {
         this.showLoading = false;
       }
+    },
+    onQuickEditModalHidden() {
+      this.staffQuickEditForm = null;
+      this.quickEditDivisions = [];
     },
     formatDate(dateString) {
       if (!dateString) return "";
@@ -2239,7 +2516,7 @@ export default {
         currency: "PHP",
       }).format(amount);
     },
-    generateCard(row) {
+    async generateCard(row) {
       console.log(row);
       this.formDriver = {
         empno: row.empno,
@@ -2250,7 +2527,207 @@ export default {
         contact_no: row.contact_no,
         is_separated: row.is_separated,
       };
+      this.oldIdQrDataUrl = "";
+      this.generateOldQRWithLogo(row.empno);
       this.$bvModal.show("employee-id-modal");
+    },
+    async generateOldQRWithLogo(empno) {
+      const profileLink = `https://employee.koronadalcityonlineservices.com/${empno}`;
+      try {
+        const qrCanvas = await QRCode.toCanvas(profileLink, {
+          width: 200,
+          margin: 1,
+          color: { dark: "#000000", light: "#ffffff" },
+        });
+        const cityLogo = new Image();
+        cityLogo.crossOrigin = "anonymous";
+        await new Promise((resolve, reject) => {
+          cityLogo.onload = resolve;
+          cityLogo.onerror = resolve;
+          cityLogo.src = "/city_logo.png";
+        });
+        const canvas = document.createElement("canvas");
+        const size = 200;
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(qrCanvas, 0, 0, size, size);
+        const logoSize = 48;
+        const logoX = (size - logoSize) / 2;
+        const logoY = (size - logoSize) / 2;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(logoX - 2, logoY - 2, logoSize + 4, logoSize + 4);
+        if (cityLogo.complete && cityLogo.naturalWidth > 0) {
+          ctx.drawImage(cityLogo, logoX, logoY, logoSize, logoSize);
+        }
+        this.oldIdQrDataUrl = canvas.toDataURL("image/png");
+      } catch (e) {
+        console.error("Old QR generation failed:", e);
+      }
+    },
+    openNationalIDModal(employee) {
+      this.nationalIDEmployee = employee;
+      this.showNationalIDModal = true;
+    },
+    async printNationalIDCard() {
+      if (!this.nationalIDEmployee) return;
+      this.isPrintingNationalID = true;
+
+      const cardRef = this.$refs.nationalIDCardRef;
+
+      if (!cardRef) {
+        this.showAlert("danger", "ID Card not found");
+        this.isPrintingNationalID = false;
+        return;
+      }
+
+      const front = cardRef.$refs.idCardFront;
+      const back = cardRef.$refs.idCardBack;
+      const flipInner = cardRef.$refs.idCardFront?.parentElement;
+      const flipStage = flipInner?.parentElement;
+
+      this.$nextTick(async () => {
+        try {
+          const savedFlipInner = flipInner?.style.transform;
+          const savedFlipStage = flipInner?.style.transformStyle;
+          const savedBack = back.style.transform;
+          const savedFrontBF = front.style.backfaceVisibility;
+          const savedBackBF = back.style.backfaceVisibility;
+
+          if (flipInner) flipInner.style.transform = "none";
+          if (flipInner) flipInner.style.transformStyle = "flat";
+          back.style.transform = "none";
+          front.style.backfaceVisibility = "visible";
+          back.style.backfaceVisibility = "visible";
+
+          const options = {
+            scale: 4,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: "#ffffff",
+            logging: false,
+            imageTimeout: 0,
+          };
+
+          const frontCanvas = await html2canvas(front, options);
+          const backCanvas = await html2canvas(back, options);
+
+          front.style.backfaceVisibility = savedFrontBF || "";
+          back.style.backfaceVisibility = savedBackBF || "";
+          back.style.transform = savedBack || "";
+          if (flipInner) flipInner.style.transform = savedFlipInner || "";
+          if (flipInner) flipInner.style.transformStyle = savedFlipStage || "";
+
+          function addBleed(canvas, scale = 1) {
+            const output = document.createElement("canvas");
+
+            output.width = Math.round(canvas.width * scale);
+            output.height = Math.round(canvas.height * scale);
+
+            const ctx = output.getContext("2d");
+
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+
+            const dx = -(output.width - canvas.width) / 2;
+            const dy = -(output.height - canvas.height) / 2;
+
+            ctx.drawImage(canvas, dx, dy, output.width, output.height);
+
+            return output;
+          }
+
+          const frontImage = addBleed(frontCanvas, 1).toDataURL("image/png");
+          const backImage = addBleed(backCanvas, 1).toDataURL("image/png");
+
+          const printWindow = window.open("", "_blank");
+
+          printWindow.document.write(`
+<!DOCTYPE html>
+<html>
+<head>
+
+<style>
+
+@page{
+    size:85mm 53mm;
+    margin:0;
+}
+
+html,body{
+    margin:0;
+    padding:0;
+    background:#fff;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+}
+
+.page{
+    width:85mm;
+    height:53mm;
+    overflow:hidden;
+    page-break-after:always;
+}
+
+.page:last-child{
+    page-break-after:auto;
+}
+
+img{
+    width:100%;
+    height:100%;
+    display:block;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="page">
+    <img src="${frontImage}">
+</div>
+
+<div class="page">
+    <img src="${backImage}">
+</div>
+
+</body>
+</html>
+      `);
+
+          printWindow.document.close();
+
+          const imgs = printWindow.document.images;
+
+          let loaded = 0;
+
+          const doPrint = () => {
+            setTimeout(() => {
+              printWindow.focus();
+              printWindow.print();
+              printWindow.close();
+            }, 1000);
+          };
+
+          Array.from(imgs).forEach((img) => {
+            if (img.complete) {
+              loaded++;
+              if (loaded === imgs.length) doPrint();
+            } else {
+              img.onload = img.onerror = () => {
+                loaded++;
+                if (loaded === imgs.length) doPrint();
+              };
+            }
+          });
+        } catch (e) {
+          console.error(e);
+          this.showAlert("danger", "Printing failed.");
+        } finally {
+          this.isPrintingNationalID = false;
+        }
+      });
     },
     handleImageError(event) {
       // If the default user.jpg also fails, create a canvas with user icon
@@ -2480,7 +2957,10 @@ export default {
       this.signatureUploadTarget = employee;
       this.signatureModalFile = null;
       this.signaturePreviewUrl = null;
+      this.signaturePadDataUrl = null;
+      this.signaturePadMode = "draw";
       this.showSignatureModal = true;
+      this.$nextTick(() => this.initSignaturePadCanvas());
     },
     onSignatureModalFileSelect(file) {
       if (!file) {
@@ -2508,22 +2988,44 @@ export default {
       this.signatureUploadTarget = null;
       this.isUploadingSignature = false;
       this.signatureAlert.dismissCountDown = 0;
+      this.signaturePadDataUrl = null;
+      this.signaturePadMode = "draw";
+      this.isDrawing = false;
+      this.drawingCtx = null;
     },
     async confirmSignatureUpload() {
-      if (!this.signatureModalFile || !this.signatureUploadTarget) return;
+      const sigSource =
+        this.signaturePadMode === "draw"
+          ? this.signaturePadDataUrl
+          : this.signaturePreviewUrl;
+      if (!sigSource || !this.signatureUploadTarget) return;
       this.isUploadingSignature = true;
       this.signatureAlert.dismissCountDown = 0;
       try {
         this.showLoading = true;
-        const formData = new FormData();
-        formData.append("file", this.signatureModalFile);
-        const res = await axios({
-          method: "PUT",
-          url: `${this.$axios.defaults.baseURL}/employees/upload-signature/${this.signatureUploadTarget.empid}`,
-          data: formData,
-        });
+        let res;
+        if (this.signaturePadMode === "draw") {
+          const blob = await (await fetch(sigSource)).blob();
+          const formData = new FormData();
+          formData.append("file", blob, "signature.png");
+          res = await axios({
+            method: "PUT",
+            url: `${this.$axios.defaults.baseURL}/employees/upload-signature/${this.signatureUploadTarget.empid}`,
+            data: formData,
+          });
+        } else {
+          const formData = new FormData();
+          formData.append("file", this.signatureModalFile);
+          res = await axios({
+            method: "PUT",
+            url: `${this.$axios.defaults.baseURL}/employees/upload-signature/${this.signatureUploadTarget.empid}`,
+            data: formData,
+          });
+        }
         const sigUrl =
-          res.data?.imageSignature64 || res.data?.url || this.signaturePreviewUrl;
+          res.data?.imageSignature64 ||
+          res.data?.url ||
+          this.signaturePreviewUrl;
         this.signatureAlert = {
           variant: "success",
           message: "Signature uploaded successfully!",
@@ -2550,6 +3052,148 @@ export default {
       } finally {
         this.showLoading = false;
         this.isUploadingSignature = false;
+      }
+    },
+    switchSignatureMode(mode) {
+      this.signaturePadMode = mode;
+      if (mode === "draw") {
+        this.signatureModalFile = null;
+        this.signaturePreviewUrl = null;
+        this.$nextTick(() => this.initSignaturePadCanvas());
+      } else {
+        this.signaturePadDataUrl = null;
+        if (this.drawingCtx) {
+          this.drawingCtx.clearRect(
+            0,
+            0,
+            this.$refs.signatureCanvas?.width || 460,
+            this.$refs.signatureCanvas?.height || 180
+          );
+        }
+      }
+    },
+    initSignaturePadCanvas() {
+      const canvas = this.$refs.signatureCanvas;
+      if (!canvas) return;
+      this.drawingCtx = canvas.getContext("2d");
+      this.drawingCtx.strokeStyle = "#1a1a2e";
+      this.drawingCtx.lineWidth = 2.5;
+      this.drawingCtx.lineCap = "round";
+      this.drawingCtx.lineJoin = "round";
+      this.drawingCtx.clearRect(0, 0, canvas.width, canvas.height);
+      this.signaturePadDataUrl = null;
+    },
+    getCanvasPos(e) {
+      const canvas = this.$refs.signatureCanvas;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY,
+      };
+    },
+    startDrawing(e) {
+      this.isDrawing = true;
+      const pos = this.getCanvasPos(e);
+      this.drawingCtx.beginPath();
+      this.drawingCtx.moveTo(pos.x, pos.y);
+    },
+    draw(e) {
+      if (!this.isDrawing) return;
+      const pos = this.getCanvasPos(e);
+      this.drawingCtx.lineTo(pos.x, pos.y);
+      this.drawingCtx.stroke();
+    },
+    stopDrawing() {
+      if (!this.isDrawing) return;
+      this.isDrawing = false;
+      const canvas = this.$refs.signatureCanvas;
+      this.signaturePadDataUrl = canvas.toDataURL("image/png");
+    },
+    startDrawingTouch(e) {
+      const touch = e.touches[0];
+      const canvas = this.$refs.signatureCanvas;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      this.isDrawing = true;
+      this.drawingCtx.beginPath();
+      this.drawingCtx.moveTo(
+        (touch.clientX - rect.left) * scaleX,
+        (touch.clientY - rect.top) * scaleY
+      );
+    },
+    drawTouch(e) {
+      if (!this.isDrawing) return;
+      const touch = e.touches[0];
+      const canvas = this.$refs.signatureCanvas;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      this.drawingCtx.lineTo(
+        (touch.clientX - rect.left) * scaleX,
+        (touch.clientY - rect.top) * scaleY
+      );
+      this.drawingCtx.stroke();
+    },
+    clearSignaturePad() {
+      const canvas = this.$refs.signatureCanvas;
+      if (!canvas || !this.drawingCtx) return;
+      this.drawingCtx.clearRect(0, 0, canvas.width, canvas.height);
+      this.signaturePadDataUrl = null;
+    },
+    onProfileImageSelect(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      this.profileImageFile = file;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        this.profileImagePreviewUrl = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+      e.target.value = "";
+    },
+    cancelProfileImageCrop() {
+      this.profileImageFile = null;
+      this.profileImagePreviewUrl = null;
+    },
+    async confirmProfileImageUpload() {
+      if (!this.profileImageFile || !this.employeeDetails) return;
+      this.isUploadingProfileImage = true;
+      this.profileImageAlert.dismissCountDown = 0;
+      try {
+        this.showLoading = true;
+        const formData = new FormData();
+        formData.append("file", this.profileImageFile);
+        const res = await axios({
+          method: "PUT",
+          url: `${this.$axios.defaults.baseURL}/employees/upload-profile-image/${this.employeeDetails.empid}`,
+          data: formData,
+        });
+        const photoUrl =
+          res.data?.photo64 || res.data?.url || this.profileImagePreviewUrl;
+        this.profileImageAlert = {
+          variant: "success",
+          message: "Profile image uploaded successfully!",
+          dismissCountDown: 3,
+        };
+        if (this.employeeDetails) {
+          this.employeeDetails.photo64 = photoUrl;
+        }
+        this.fetchEmployees();
+        this.cancelProfileImageCrop();
+      } catch (error) {
+        const msg =
+          error?.response?.data?.error || "Failed to upload profile image.";
+        this.profileImageAlert = {
+          variant: "danger",
+          message: msg,
+          dismissCountDown: 5,
+        };
+      } finally {
+        this.showLoading = false;
+        this.isUploadingProfileImage = false;
       }
     },
     async updateEmployee() {
@@ -2626,6 +3270,92 @@ export default {
         this.showAlert("danger", "Failed to load ID card generator");
       };
       document.head.appendChild(script);
+    },
+    async downloadNationalIDCard() {
+      if (!this.nationalIDEmployee) return;
+
+      const cardRef = this.$refs.nationalIDCardRef;
+      if (!cardRef) {
+        this.showAlert("danger", "ID Card not found");
+        return;
+      }
+
+      this.$nextTick(async () => {
+        try {
+          const options = {
+            scale: 4,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: "#ffffff",
+            logging: false,
+            imageTimeout: 0,
+          };
+
+          const front = cardRef.$refs.idCardFront;
+          const back = cardRef.$refs.idCardBack;
+          const flipInner = cardRef.$refs.idCardFront?.parentElement;
+
+          const frontCanvas = await html2canvas(front, options);
+
+          const savedFlipTransform = flipInner?.style.transform;
+          const savedCardTransform = back?.style.transform;
+          const savedBackfaceVisibility = back?.style.backfaceVisibility;
+          const savedWebkitBackfaceVisibility = back?.style.webkitBackfaceVisibility;
+          if (flipInner) flipInner.style.transform = "none";
+          if (back) {
+            back.style.transform = "none";
+            back.style.backfaceVisibility = "visible";
+            back.style.webkitBackfaceVisibility = "visible";
+          }
+
+          const backCanvas = await html2canvas(back, options);
+
+          if (flipInner) flipInner.style.transform = savedFlipTransform || "";
+          if (back) {
+            back.style.transform = savedCardTransform || "";
+            back.style.backfaceVisibility = savedBackfaceVisibility || "";
+            back.style.webkitBackfaceVisibility = savedWebkitBackfaceVisibility || "";
+          }
+
+          const fullname = this.nationalIDEmployee.fullname || "Employee";
+          const safeName = fullname.replace(/\s+/g, "_");
+
+          const triggerDownload = (blob, filename) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          };
+
+          await new Promise((resolve, reject) => {
+            frontCanvas.toBlob((blob) => {
+              if (!blob) return reject(new Error("Front blob failed"));
+              triggerDownload(blob, `ID_Card_Front_${safeName}.png`);
+              resolve();
+            }, "image/png");
+          });
+
+          await new Promise((resolve, reject) => {
+            backCanvas.toBlob((blob) => {
+              if (!blob) return reject(new Error("Back blob failed"));
+              triggerDownload(blob, `ID_Card_Back_${safeName}.png`);
+              resolve();
+            }, "image/png");
+          });
+
+          this.showAlert(
+            "success",
+            "National ID Card downloaded successfully!"
+          );
+        } catch (e) {
+          console.error("Download failed:", e);
+          this.showAlert("danger", "Failed to download National ID Card");
+        }
+      });
     },
     onDepartmentChange() {
       this.currentPage = 1;
@@ -3200,7 +3930,7 @@ export default {
 .employee-thumbnail {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: 4px;
   object-fit: cover;
 }
 
@@ -3372,10 +4102,46 @@ export default {
   flex-shrink: 0;
   width: 112px;
   height: 112px;
-  border-radius: 50%;
+  border-radius: 4px;
   overflow: hidden;
   background: #eef1f6;
   border: 1px solid #e2e6ed;
+}
+
+.emp-staff-summary-avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+  width: 112px;
+  height: 112px;
+}
+
+.emp-staff-summary-avatar-wrapper .emp-staff-summary-avatar {
+  width: 100%;
+  height: 100%;
+}
+
+.emp-staff-avatar-upload-btn {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #4a90d9;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  z-index: 2;
+  transition: background 0.2s;
+}
+
+.emp-staff-avatar-upload-btn:hover {
+  background: #357abd;
 }
 
 .emp-staff-summary-avatar img {
@@ -3652,68 +4418,174 @@ export default {
   text-align: left;
 }
 
-.staff-quick-edit {
+/* ===== Quick Edit Modal – Professional Sectioned Layout ===== */
+
+.sqe-container {
   padding: 0;
 }
 
-.staff-quick-edit-hint {
-  margin: 0 1.25rem 1rem;
-  line-height: 1.45;
+.sqe-form {
+  padding: 0;
 }
 
-.staff-quick-edit-fields {
-  margin: 0 1.25rem;
-  padding-bottom: 0.25rem;
+/* Section wrapper */
+.sqe-section {
+  border-bottom: 1px solid #f0f2f5;
 }
 
-.staff-quick-edit-fields ::v-deep .form-group {
-  margin-bottom: 0.85rem;
+.sqe-section:last-child {
+  border-bottom: none;
 }
 
-.staff-quick-edit-fields ::v-deep .form-group:last-of-type {
+.sqe-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.875rem 1.5rem 0;
+}
+
+.sqe-section-icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.sqe-section-icon--blue {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+.sqe-section-icon--red {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.sqe-section-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0;
+  font-family: font_M, sans-serif;
+}
+
+.sqe-section-body {
+  padding: 0.75rem 1.5rem 1.25rem;
+}
+
+/* Grid layouts */
+.sqe-form-grid {
+  display: grid;
+  gap: 0.75rem 1rem;
+}
+
+.sqe-form-grid--2col {
+  grid-template-columns: 1fr 1fr;
+}
+
+.sqe-form-grid--3col {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.sqe-form-grid ::v-deep .form-group {
   margin-bottom: 0;
+  text-align: left;
 }
 
-/* vue-select: match Bootstrap form-control look inside quick edit */
-.staff-quick-dept-vselect {
+.sqe-text-left {
+  text-align: left;
+}
+
+.sqe-text-left ::v-deep .form-group label {
+  text-align: left;
+}
+
+.sqe-form-grid ::v-deep .form-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 0.3rem;
+}
+
+.sqe-form-grid ::v-deep .form-control,
+.sqe-form-grid ::v-deep .custom-select {
+  font-size: 0.875rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 0.4rem 0.75rem;
+  height: 38px;
+  color: #1f2937;
+  background-color: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.sqe-form-grid ::v-deep .form-control:focus,
+.sqe-form-grid ::v-deep .custom-select:focus {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+/* vue-select inside quick edit */
+.sqe-vselect {
   display: block;
 }
 
-.staff-quick-dept-vselect ::v-deep .vs__dropdown-toggle {
-  min-height: calc(1.5em + 0.75rem + 2px);
-  padding: 0.2rem 0.55rem;
-  border: 1px solid #ced4da;
-  border-radius: 0.25rem;
+.sqe-vselect ::v-deep .vs__dropdown-toggle {
+  min-height: 38px;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   background-color: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.staff-quick-dept-vselect ::v-deep .vs__selected-options {
+.sqe-vselect ::v-deep .vs__selected-options {
   flex-wrap: wrap;
   padding: 0;
 }
 
-.staff-quick-dept-vselect ::v-deep .vs__search,
-.staff-quick-dept-vselect ::v-deep .vs__search:focus {
+.sqe-vselect ::v-deep .vs__search,
+.sqe-vselect ::v-deep .vs__search:focus {
   margin: 0;
   padding: 0.1rem 0;
+  font-size: 0.875rem;
 }
 
-.staff-quick-dept-vselect ::v-deep .vs__actions {
+.sqe-vselect ::v-deep .vs__actions {
   padding-top: 0;
 }
 
-.staff-quick-dept-vselect ::v-deep .vs__dropdown-menu {
-  border: 1px solid #ced4da;
-  border-radius: 0.25rem;
-  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+.sqe-vselect ::v-deep .vs__dropdown-menu {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   z-index: 1060;
 }
 
-.staff-quick-dept-vselect.vs--open ::v-deep .vs__dropdown-toggle {
-  border-color: #80bdff;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+.sqe-vselect ::v-deep .vs__dropdown-option {
+  font-size: 0.875rem;
+  padding: 0.45rem 0.75rem;
 }
 
+.sqe-vselect ::v-deep .vs__dropdown-option--highlight {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.sqe-vselect.vs--open ::v-deep .vs__dropdown-toggle {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+/* Footer */
 .staff-quick-edit-footer {
   display: flex;
   justify-content: flex-end;
@@ -3721,19 +4593,38 @@ export default {
   width: 100%;
 }
 
-/* Quick edit modal: full-width body, horizontal inset only on content */
+/* Modal chrome overrides */
 ::v-deep .staff-quick-edit-modal .modal-body {
-  padding: 0.75rem 0 0 !important;
+  padding: 0 !important;
+  background: #fafbfc;
 }
 
 ::v-deep .staff-quick-edit-modal .modal-footer {
-  padding: 0.75rem 1.25rem 1rem !important;
-  border-top: 1px solid #e9ecef;
+  padding: 0.75rem 1.5rem 1rem !important;
+  border-top: 1px solid #f0f2f5;
+  background: #fff;
   justify-content: flex-end;
 }
 
 ::v-deep .staff-quick-edit-modal .modal-dialog.modal-lg {
-  max-width: min(560px, calc(100vw - 2rem));
+  max-width: min(620px, calc(100vw - 2rem));
+}
+
+/* Responsive: stack to single column on narrow screens */
+@media (max-width: 576px) {
+  .sqe-form-grid--2col,
+  .sqe-form-grid--3col {
+    grid-template-columns: 1fr;
+  }
+
+  .sqe-section-header {
+    padding-left: 1rem;
+  }
+
+  .sqe-section-body {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }
 
 /* Staff detail modal: same vertical anchor (near top); short content sits higher, tall content grows downward with scroll */
@@ -3887,5 +4778,121 @@ export default {
   padding: 12px;
   background: #fafafa;
   object-fit: contain;
+}
+
+/* Signature Pad: mode toggle */
+.sig-mode-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.sig-mode-btn {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sig-mode-btn + .sig-mode-btn {
+  border-left: 1px solid #e5e7eb;
+}
+
+.sig-mode-btn--active {
+  background: #2563eb;
+  color: #fff;
+}
+
+.sig-mode-btn:not(.sig-mode-btn--active):hover {
+  background: #f3f4f6;
+}
+
+/* Canvas drawing area */
+.sig-draw-area {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sig-canvas-wrapper {
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.sig-canvas-wrapper:hover {
+  border-color: #93c5fd;
+}
+
+.sig-canvas {
+  display: block;
+  width: 100%;
+  height: 180px;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.sig-draw-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Upload area */
+.sig-upload-area {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.profile-crop-section {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-crop-circle {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #4a90d9;
+  position: relative;
+  cursor: grab;
+  background: #e9ecef;
+  user-select: none;
+}
+
+.profile-crop-circle:active {
+  cursor: grabbing;
+}
+
+.profile-crop-preview img {
+  width: 220px;
+  height: 220px;
+  object-fit: cover;
+  border: 1px solid #e2e6ed;
+  border-radius: 4px;
+  display: block;
+}
+
+.profile-crop-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
 }
 </style>
