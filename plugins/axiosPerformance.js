@@ -51,6 +51,7 @@ export default () => {
     const entry = key ? cache.get(key) : null;
 
     if (entry && Date.now() - entry.timestamp < CACHE_TTL) {
+      config.__hrmsCacheHit = true;
       config.adapter = async () => ({
         data: entry.data,
         status: entry.status,
@@ -71,8 +72,7 @@ export default () => {
       const config = response.config || {};
       const key = makeKey(config);
 
-      // Do not store synthetic cached responses again.
-      if (key && !config.adapter?.__hrmsCacheAdapter) {
+      if (key && !config.__hrmsCacheHit) {
         cache.set(key, {
           data: response.data,
           status: response.status,
