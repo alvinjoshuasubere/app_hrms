@@ -268,6 +268,104 @@ export default {
   background: rgba(255,255,255,.4);
 }
 
+/* Reference-inspired dashboard placement: the application becomes a floating,
+   white workspace inside the blue portal background rather than a loose page. */
+::v-deep .dashboard {
+  background: #f5f8fd !important;
+}
+
+::v-deep .dashboard .db-wrap {
+  max-width: none !important;
+  padding: 24px 28px 42px !important;
+}
+
+::v-deep .dashboard .db-top {
+  min-height: 88px !important;
+  margin-bottom: 16px !important;
+  padding: 18px 22px !important;
+  border: 1px solid #e3eaf4 !important;
+  border-radius: 13px !important;
+  background: #fff !important;
+  box-shadow: 0 7px 22px rgba(15,45,90,.05) !important;
+}
+
+::v-deep .dashboard .db-top::after {
+  display: none !important;
+}
+
+::v-deep .dashboard .db-kicker {
+  color: #5d7aa0 !important;
+}
+
+::v-deep .dashboard .db-kicker-dot {
+  background: #2563eb !important;
+  box-shadow: 0 0 0 5px rgba(37,99,235,.1) !important;
+}
+
+::v-deep .dashboard .db-title {
+  color: #132f54 !important;
+  font-size: 1.45rem !important;
+}
+
+::v-deep .dashboard .db-desc {
+  color: #7d8da3 !important;
+}
+
+::v-deep .dashboard .db-date {
+  border-color: #dce6f2 !important;
+  background: #f7faff !important;
+  color: #527092 !important;
+}
+
+::v-deep .dashboard .hr-section-heading:first-of-type {
+  margin-top: 12px !important;
+}
+
+::v-deep .dashboard .hr-section-heading {
+  margin-top: 23px !important;
+}
+
+::v-deep .dashboard .hr-kpi-grid {
+  gap: 12px !important;
+}
+
+::v-deep .dashboard .hr-kpi {
+  min-height: 118px !important;
+  padding: 16px 18px !important;
+}
+
+::v-deep .dashboard .hr-chart-grid {
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr) !important;
+  gap: 12px !important;
+}
+
+::v-deep .dashboard .card-c {
+  border-radius: 13px !important;
+}
+
+::v-deep .dashboard .card-c__b {
+  min-height: 285px !important;
+}
+
+::v-deep .dashboard .card-c--f .card-c__b {
+  min-height: 330px !important;
+}
+
+::v-deep .dashboard .hr-insight-grid {
+  gap: 12px !important;
+}
+
+::v-deep .dashboard .hr-action-grid {
+  gap: 12px !important;
+}
+
+@media (max-width: 1200px) {
+  ::v-deep .dashboard .hr-kpi-grid,
+  ::v-deep .dashboard .hr-insight-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
 @media (max-width: 900px) {
   .portal-header { padding: 18px 16px 0; }
   .portal-brand-row { min-height: 96px; }
@@ -277,6 +375,9 @@ export default {
   .portal-logo-wrap { width: 50px; height: 50px; border-radius: 12px; }
   .page-container { width: calc(100% - 28px); }
   .portal-footer { padding: 0 14px; }
+  ::v-deep .dashboard .db-wrap { padding: 18px 16px 34px !important; }
+  ::v-deep .dashboard .hr-chart-grid,
+  ::v-deep .dashboard .hr-action-grid { grid-template-columns: 1fr !important; }
 }
 
 @media (max-width: 575px) {
@@ -288,6 +389,8 @@ export default {
   .portal-nav-links .nav-link { min-height: 44px; }
   .portal-nav-actions .nav-link { min-height: 44px; }
   .portal-logout { margin: 8px 12px; }
+  ::v-deep .dashboard .hr-kpi-grid,
+  ::v-deep .dashboard .hr-insight-grid { grid-template-columns: 1fr !important; }
 }
 
 ::v-deep .dashboard,
