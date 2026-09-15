@@ -1,0 +1,332 @@
+/* =========================================================
+   HRMS MODERN UI LAYER
+   Visual-only enhancements. No application logic changed.
+   ========================================================= */
+
+:root {
+  --ui-primary: #2563eb;
+  --ui-primary-dark: #1d4ed8;
+  --ui-primary-soft: #eff6ff;
+  --ui-surface: #ffffff;
+  --ui-bg: #f6f8fc;
+  --ui-border: #e7ebf2;
+  --ui-text: #172033;
+  --ui-muted: #748094;
+  --ui-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 8px 24px rgba(15, 23, 42, .05);
+  --ui-radius: 14px;
+}
+
+/* ---------- Application surface ---------- */
+body {
+  background: var(--ui-bg) !important;
+  color: var(--ui-text);
+}
+
+/* ---------- Dashboard ---------- */
+.dashboard {
+  background: linear-gradient(180deg, #f8faff 0%, #f5f7fb 100%) !important;
+}
+
+.dashboard .db-wrap {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 1.5rem 1.75rem 2.5rem !important;
+}
+
+.dashboard .db-top {
+  padding: 1.35rem 1.5rem;
+  margin-bottom: 1.25rem !important;
+  background: rgba(255,255,255,.92);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  box-shadow: var(--ui-shadow);
+  align-items: center !important;
+}
+
+.dashboard .db-title {
+  font-size: 1.65rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -.035em !important;
+  color: #111827 !important;
+}
+
+.dashboard .db-desc {
+  font-size: .86rem !important;
+  color: #8792a6 !important;
+}
+
+.dashboard .db-date {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: .35rem .75rem;
+  border-radius: 9px;
+  background: #f8fafc;
+  border: 1px solid var(--ui-border);
+  color: #667085 !important;
+  font-weight: 600;
+}
+
+/* ---------- KPI cards ---------- */
+.dashboard .db-stats {
+  gap: 1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.dashboard .stat {
+  position: relative;
+  min-height: 116px;
+  padding: 1.2rem 1.25rem !important;
+  border: 1px solid var(--ui-border) !important;
+  border-radius: var(--ui-radius) !important;
+  box-shadow: var(--ui-shadow) !important;
+  overflow: hidden;
+}
+
+.dashboard .stat::after {
+  content: "";
+  position: absolute;
+  right: -22px;
+  bottom: -30px;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: .035;
+}
+
+.dashboard .stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(15,23,42,.08) !important;
+}
+
+.dashboard .stat-num {
+  font-size: 1.9rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -.04em;
+}
+
+.dashboard .stat-lbl {
+  margin-top: .3rem !important;
+  font-size: .76rem !important;
+  font-weight: 600;
+  color: #8994a7 !important;
+}
+
+.dashboard .stat-icon {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 13px !important;
+  font-size: 1.05rem !important;
+  box-shadow: 0 7px 16px rgba(37,99,235,.14);
+}
+
+.dashboard .stat--total .stat-icon { background: linear-gradient(135deg,#4f46e5,#6366f1) !important; }
+.dashboard .stat--active .stat-icon { background: linear-gradient(135deg,#059669,#10b981) !important; }
+.dashboard .stat--dept .stat-icon { background: linear-gradient(135deg,#2563eb,#3b82f6) !important; }
+.dashboard .stat--bday .stat-icon { background: linear-gradient(135deg,#d97706,#f59e0b) !important; }
+
+/* ---------- Chart and data cards ---------- */
+.dashboard .db-charts {
+  gap: 1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.dashboard .card-c {
+  border: 1px solid var(--ui-border) !important;
+  border-radius: var(--ui-radius) !important;
+  box-shadow: var(--ui-shadow) !important;
+  background: rgba(255,255,255,.98) !important;
+  margin-bottom: 1rem !important;
+}
+
+.dashboard .card-c:hover {
+  box-shadow: 0 10px 30px rgba(15,23,42,.065) !important;
+}
+
+.dashboard .card-c__h {
+  min-height: 54px;
+  padding: .85rem 1.15rem !important;
+  background: linear-gradient(180deg,#fff 0%,#fbfcfe 100%);
+  border-bottom: 1px solid #edf0f5 !important;
+  font-size: .82rem !important;
+  font-weight: 700 !important;
+  color: #263247 !important;
+}
+
+.dashboard .card-c__h svg {
+  width: 16px;
+  height: 16px;
+  padding: 7px;
+  box-sizing: content-box;
+  border-radius: 9px;
+  background: var(--ui-primary-soft);
+  color: var(--ui-primary) !important;
+}
+
+.dashboard .card-c__badge {
+  min-width: 28px;
+  text-align: center;
+  padding: .25rem .55rem !important;
+  border: 1px solid #fde68a;
+  background: #fffbeb !important;
+  color: #a16207 !important;
+}
+
+.dashboard .card-c__b {
+  min-height: 330px !important;
+  padding: .5rem !important;
+}
+
+.dashboard .card-c--f .card-c__b {
+  min-height: 370px !important;
+}
+
+/* ECharts canvas/container breathing room */
+.dashboard [ref="statusChart"],
+.dashboard [ref="genderChart"],
+.dashboard [ref="deptChart"] {
+  border-radius: 10px;
+}
+
+/* ---------- Dashboard tables ---------- */
+.dashboard .tbl-wrap {
+  border-radius: 0 0 var(--ui-radius) var(--ui-radius);
+}
+
+.dashboard .tbl {
+  font-size: .8rem !important;
+}
+
+.dashboard .tbl thead th {
+  padding: .8rem 1rem !important;
+  background: #f8fafc !important;
+  color: #667085 !important;
+  border-bottom: 1px solid #e5eaf1 !important;
+  font-size: .66rem !important;
+  font-weight: 800 !important;
+}
+
+.dashboard .tbl tbody td {
+  padding: .78rem 1rem !important;
+  border-bottom: 1px solid #f0f2f6 !important;
+  color: #344054 !important;
+}
+
+.dashboard .tbl tbody tr:hover td {
+  background: #f8fbff !important;
+}
+
+.dashboard .tbl tbody td strong {
+  color: #172033;
+  font-weight: 700;
+}
+
+.dashboard .bdg,
+.dashboard .ret-bdg {
+  border: 1px solid rgba(0,0,0,.035);
+  border-radius: 7px !important;
+  font-weight: 700 !important;
+}
+
+.dashboard .empty-bday {
+  min-height: 240px;
+  justify-content: center;
+  color: #98a2b3 !important;
+}
+
+.dashboard .empty-bday svg {
+  width: 28px;
+  height: 28px;
+  padding: 13px;
+  border-radius: 50%;
+  background: #f8fafc;
+  color: #98a2b3;
+}
+
+.dashboard .exp-wrap {
+  padding: .85rem !important;
+  background: #fcfdff;
+}
+
+.dashboard .exp-btn {
+  min-height: 34px;
+  border-radius: 8px !important;
+  border: 1px solid #dbe3ef !important;
+  background: #fff !important;
+  color: var(--ui-primary) !important;
+  font-weight: 700 !important;
+}
+
+.dashboard .exp-btn:hover {
+  background: var(--ui-primary-soft) !important;
+  border-color: #bfdbfe !important;
+}
+
+/* ---------- Bootstrap-Vue / application tables ---------- */
+.table,
+.b-table {
+  color: #344054;
+}
+
+.table thead th,
+.b-table thead th {
+  background: #f8fafc;
+  color: #667085;
+  border-top: 0;
+  border-bottom: 1px solid #e5eaf1;
+  font-size: .68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .045em;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.table tbody td,
+.b-table tbody td {
+  border-color: #eef1f5;
+  vertical-align: middle;
+}
+
+.table-hover tbody tr:hover,
+.b-table tbody tr:hover {
+  background: #f8fbff;
+}
+
+.table-responsive {
+  border-radius: 12px;
+}
+
+/* ---------- Form controls ---------- */
+.form-control,
+.custom-select,
+.custom-file-label {
+  border-color: #dfe4ec;
+  border-radius: 9px;
+}
+
+.form-control:focus,
+.custom-select:focus {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 .2rem rgba(37,99,235,.10);
+}
+
+.btn {
+  border-radius: 9px;
+  font-weight: 600;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1200px) {
+  .dashboard .db-wrap { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
+}
+
+@media (max-width: 767px) {
+  .dashboard .db-wrap { padding: 1rem .85rem 2rem !important; }
+  .dashboard .db-top { padding: 1rem; }
+  .dashboard .db-date { margin-top: .35rem; }
+  .dashboard .stat { min-height: 100px; }
+  .dashboard .card-c__b { min-height: 270px !important; }
+  .dashboard .card-c--f .card-c__b { min-height: 300px !important; }
+}
