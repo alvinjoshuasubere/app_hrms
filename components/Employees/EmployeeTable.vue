@@ -43,7 +43,6 @@
                   <b-form-select
                     v-model="selectedStatus"
                     :options="statusOptions"
-                    @change="onStatusChange"
                     class="modern-select-sm"
                   ></b-form-select>
                 </div>
@@ -1022,68 +1021,6 @@
       <div v-if="staffQuickEditForm" class="sqe-container">
         <b-form class="sqe-form" @submit.prevent="saveStaffQuickEdit">
           <!-- Work Assignment -->
-          <div class="sqe-section">
-            <div class="sqe-section-header">
-              <div class="sqe-section-icon-wrap sqe-section-icon--blue">
-                <font-awesome-icon icon="briefcase" />
-              </div>
-              <h5 class="sqe-section-title">Work Assignment</h5>
-            </div>
-            <div class="sqe-section-body">
-              <div class="sqe-form-grid sqe-form-grid--2col sqe-text-left">
-                <b-form-group label="Department" label-for="sqe-dept">
-                  <v-select
-                    id="sqe-dept"
-                    v-model="staffQuickEditForm.deptdesc"
-                    :options="staffDeptOptionsForVueSelect"
-                    placeholder="Select department"
-                    :clearable="true"
-                    :searchable="true"
-                    :append-to-body="true"
-                    disabled
-                    class="sqe-vselect"
-                  />
-                </b-form-group>
-                <b-form-group label="Division" label-for="sqe-div">
-                  <v-select
-                    id="sqe-div"
-                    v-model="staffQuickEditForm.divisiondesc"
-                    :options="staffDivOptionsForVueSelect"
-                    placeholder="Select division"
-                    :clearable="true"
-                    :searchable="true"
-                    :append-to-body="true"
-                    class="sqe-vselect"
-                    disabled
-                  />
-                </b-form-group>
-                <b-form-group label="Position" label-for="sqe-pos">
-                  <b-form-input
-                    id="sqe-pos"
-                    v-model="staffQuickEditForm.position_desc"
-                    placeholder="Job title / position"
-                    disabled
-                  />
-                </b-form-group>
-                <b-form-group label="Employment Status" label-for="sqe-empst">
-                  <b-form-select
-                    id="sqe-empst"
-                    v-model="staffQuickEditForm.employmentStatus"
-                    :options="staffEmploymentStatusSelectOptions"
-                    disabled
-                  />
-                </b-form-group>
-                <b-form-group label="Separation Status" label-for="sqe-sep">
-                  <b-form-select
-                    id="sqe-sep"
-                    v-model="staffQuickEditForm.separation"
-                    :options="staffSeparationSelectOptions"
-                    disabled
-                  />
-                </b-form-group>
-              </div>
-            </div>
-          </div>
 
           <!-- Emergency Contact -->
           <div class="sqe-section">
@@ -1523,7 +1460,7 @@
       <template #modal-title>
         <div style="display: flex; align-items: center; gap: 10px">
           <font-awesome-icon
-            icon="exclamation-triangle"
+            icon="triangle-exclamation"
             style="font-size: 15px; color: #ffc107"
           />
           <span style="font-size: 14px; font-weight: 600"
@@ -1558,7 +1495,7 @@
 
           <div class="warning-box">
             <font-awesome-icon
-              icon="exclamation-triangle"
+              icon="triangle-exclamation"
               class="warning-icon"
             />
             <span
@@ -2058,6 +1995,27 @@ export default {
     filteredEmployees() {
       let filtered = this.employees;
 
+      if (this.searchText) {
+        const q = this.searchText.toLowerCase();
+        filtered = filtered.filter((employee) => {
+          const haystack = [
+            employee.fullname,
+            employee.empno,
+            employee.swipe_id,
+            employee.position_desc,
+            employee.deptdesc,
+            employee.division_desc,
+            employee.divisiondesc,
+            employee.division,
+            employee.EmploymentStatus,
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+          return haystack.includes(q);
+        });
+      }
+
       if (this.selectedDepartments.length > 0) {
         filtered = filtered.filter((employee) =>
           this.selectedDepartments.includes(employee.deptdesc)
@@ -2170,6 +2128,33 @@ export default {
       }
       return names;
     },
+    /** Division labels for vue-select, limited to divisions of the selected department */
+    staffDivOptionsForVueSelect() {
+      const f = this.staffQuickEditForm;
+      if (!f) return [];
+      const deptdesc = String(f.deptdesc || "").trim();
+      const matchedDept = this.departments.find(
+        (dept) => String(dept.deptdesc).trim() === deptdesc
+      );
+      const deptid = matchedDept ? matchedDept.deptid : f.deptid;
+      let pool = this.divisions;
+      if (deptid) {
+        pool = pool.filter(
+          (d) =>
+            String(d.deptid || d.dept_id || "").trim() === String(deptid).trim()
+        );
+      }
+      const names = [
+        ...new Set(
+          pool.map((d) => d.division_desc || d.divisiondesc).filter(Boolean)
+        ),
+      ];
+      const cur = String(f.divisiondesc || f.division_desc || "").trim();
+      if (cur && !names.includes(cur)) {
+        return [cur, ...names];
+      }
+      return names;
+    },
     staffEmploymentStatusSelectOptions() {
       const opts = this.employmentStatusOptions.map((s) => ({
         value: s,
@@ -2234,16 +2219,11 @@ export default {
     },
   },
   watch: {
-    currentPage() {
-      this.fetchEmployees();
-    },
     perPage() {
       this.currentPage = 1;
-      this.fetchEmployees();
     },
     searchText() {
       this.currentPage = 1;
-      this.debouncedFetchEmployees();
     },
     selectedStatus() {
       this.currentPage = 1;
@@ -2254,6 +2234,12 @@ export default {
     },
     selectedEmploymentStatuses() {
       this.currentPage = 1;
+    },
+    "staffQuickEditForm.deptdesc"() {
+      if (this.staffQuickEditForm) {
+        this.staffQuickEditForm.divisiondesc = "";
+        this.staffQuickEditForm.division_key = null;
+      }
     },
   },
   methods: {
@@ -2290,9 +2276,6 @@ export default {
       if (this.$refs.typeDropdown) {
         this.$refs.typeDropdown.hide();
       }
-    },
-    onStatusChange() {
-      this.fetchEmployees();
     },
     showAlert(message, variant) {
       this.alert = {
@@ -2353,6 +2336,7 @@ export default {
           this.showAlert("No employee details returned.", "warning");
           return;
         }
+        console.log(row, "DETAILS");
         this.employeeDetails = row;
         this.employeeDetailTab = 0;
         this.profilePhotoFailed = false;
@@ -2371,12 +2355,16 @@ export default {
         e.EmploymentStatus != null ? String(e.EmploymentStatus) : "";
 
       const matchedDept = this.departments.find(
-        (dept) => String(dept.deptdesc).trim() === String(e.deptdesc).trim()
+        (dept) =>
+          String(dept.deptid).trim() === String(e.deptid || "").trim() ||
+          String(dept.deptdesc).trim() === String(e.deptdesc || "").trim()
       );
       const matchedDivision = this.divisions.find(
         (division) =>
+          String(division.division_key).trim() ===
+            String(e.division_key || "").trim() ||
           String(division.division_desc).trim() ===
-          String(e.division_desc || "").trim()
+            String(e.division_desc || "").trim()
       );
       const matchedPosition = this.positions.find(
         (position) =>
@@ -2427,54 +2415,13 @@ export default {
     },
     async saveStaffQuickEdit() {
       const f = this.staffQuickEditForm;
-      if (!f || !f.empid) return;
-      if (!f.deptid && !f.deptdesc) {
-        this.showAlert("Please select a department.", "warning");
-        return;
-      }
-      if (!f.position_key && !f.position_desc) {
-        this.showAlert("Please select a position.", "warning");
-        return;
-      }
+
       try {
         this.showLoading = true;
-
-        const selectedDept = this.departments.find(
-          (dept) => String(dept.deptdesc).trim() === String(f.deptdesc).trim()
-        );
-        const selectedDivision = this.quickEditDivisions.find(
-          (division) =>
-            String(
-              division.division_desc || division.divisiondesc || ""
-            ).trim() ===
-              String(f.divisiondesc || f.division_desc || "").trim() &&
-            String(division.deptid || division.dept_id || "").trim() ===
-              String(selectedDept?.deptid || f.deptid || "").trim()
-        );
-        const selectedPosition = this.positions.find(
-          (position) =>
-            String(
-              position.position_desc ||
-                position.positionname ||
-                position.position
-            ).trim() === String(f.position_desc || "").trim()
-        );
-        const selectedStatus = this.employmentStatuses.find(
-          (status) =>
-            String(status.value).trim() === String(f.employmentStatus).trim()
-        );
-        console.log(f.employmentStatus, selectedStatus, "ASDASDASDAS");
         await axios({
           method: "PUT",
           url: `${this.$axios.defaults.baseURL}/employees/update-one-emp-temporary/${f.empid}`,
           data: {
-            deptid: f.deptid || selectedDept?.deptid || null,
-            division_key:
-              selectedDivision?.division_key || f.division_key || null,
-            position_key:
-              f.position_key || selectedPosition?.position_key || null,
-            empstat_key: selectedStatus.empstat_key || null,
-            empstat_name: selectedStatus ? selectedStatus.value : null,
             emergency_name: f.emergency_name || "",
             emergency_relation: f.emergency_relation || "",
             emergency_contact: f.emergency_contact || "",
@@ -2484,7 +2431,7 @@ export default {
         this.showStaffQuickEditModal = false;
         this.staffQuickEditForm = null;
         await this.refetchEmployeeDetails();
-        await this.fetchEmployees();
+        await this.fetchEmployees(true);
       } catch (error) {
         console.error("Error saving quick edit:", error);
         const msg =
@@ -3037,7 +2984,7 @@ img{
         ) {
           this.employeeDetails.imageSignature64 = sigUrl;
         }
-        this.fetchEmployees();
+        this.fetchEmployees(true);
         setTimeout(() => {
           this.showSignatureModal = false;
         }, 1500);
@@ -3066,8 +3013,8 @@ img{
           this.drawingCtx.clearRect(
             0,
             0,
-            this.$refs.signatureCanvas?.width || 460,
-            this.$refs.signatureCanvas?.height || 180
+            this.$refs.signatureCanvas?.width || 1000,
+            this.$refs.signatureCanvas?.height || 800
           );
         }
       }
@@ -3181,7 +3128,7 @@ img{
         if (this.employeeDetails) {
           this.employeeDetails.photo64 = photoUrl;
         }
-        this.fetchEmployees();
+        this.fetchEmployees(true);
         this.cancelProfileImageCrop();
       } catch (error) {
         const msg =
@@ -3211,7 +3158,7 @@ img{
 
         this.showAlert("success", "Employee updated successfully!");
         this.closeEditModal();
-        this.fetchEmployees(); // Refresh the table
+        this.fetchEmployees(true); // Refresh the table
       } catch (error) {
         console.error("Error updating employee:", error);
         const msg =
@@ -3300,7 +3247,8 @@ img{
           const savedFlipTransform = flipInner?.style.transform;
           const savedCardTransform = back?.style.transform;
           const savedBackfaceVisibility = back?.style.backfaceVisibility;
-          const savedWebkitBackfaceVisibility = back?.style.webkitBackfaceVisibility;
+          const savedWebkitBackfaceVisibility =
+            back?.style.webkitBackfaceVisibility;
           if (flipInner) flipInner.style.transform = "none";
           if (back) {
             back.style.transform = "none";
@@ -3314,7 +3262,8 @@ img{
           if (back) {
             back.style.transform = savedCardTransform || "";
             back.style.backfaceVisibility = savedBackfaceVisibility || "";
-            back.style.webkitBackfaceVisibility = savedWebkitBackfaceVisibility || "";
+            back.style.webkitBackfaceVisibility =
+              savedWebkitBackfaceVisibility || "";
           }
 
           const fullname = this.nationalIDEmployee.fullname || "Employee";
@@ -3359,19 +3308,12 @@ img{
     },
     onDepartmentChange() {
       this.currentPage = 1;
-      this.fetchEmployees();
     },
     onDivisionChange() {
       this.currentPage = 1;
     },
     onEmploymentStatusChange() {
       this.currentPage = 1;
-    },
-    debouncedFetchEmployees() {
-      clearTimeout(this._searchTimer);
-      this._searchTimer = setTimeout(() => {
-        this.fetchEmployees();
-      }, 400);
     },
     async fetchDepartments() {
       try {
@@ -3441,11 +3383,20 @@ img{
         this.positions = [];
       }
     },
-    async fetchEmployees() {
+    async fetchEmployees(force = false) {
+      const cacheKey = `employees:${this.selectedStatus}`;
+      if (force && this._employeesCache) {
+        delete this._employeesCache[cacheKey];
+      }
+      if (!force && this._employeesCache && this._employeesCache[cacheKey]) {
+        this.employees = this._employeesCache[cacheKey];
+        this.totalRows = this.employees.length;
+        return;
+      }
       this.showLoading = true;
       try {
         const params = {
-          text: this.searchText || "",
+          text: "",
         };
 
         if (this.selectedStatus === 2) {
@@ -3454,8 +3405,6 @@ img{
         } else {
           params.IsSeparated = this.selectedStatus;
         }
-
-        console.log("Fetching employees with params:", params);
 
         const res = await axios({
           method: "GET",
@@ -3489,6 +3438,11 @@ img{
 
         if (!this.totalRows && Array.isArray(this.employees)) {
           this.totalRows = this.employees.length;
+        }
+
+        if (this.employees.length > 0) {
+          if (!this._employeesCache) this._employeesCache = {};
+          this._employeesCache[cacheKey] = this.employees;
         }
       } catch (e) {
         this.employees = [];
@@ -3648,7 +3602,7 @@ img{
           "success",
           `Successfully updated ${this.selectedForQR.length} employees to Separated status!`
         );
-        this.fetchEmployees(); // Refresh the table
+        this.fetchEmployees(true); // Refresh the table
         this.selectedForQR = []; // Clear selection after update
         this.showConfirmModal = false; // Close modal
       } catch (error) {
@@ -3686,7 +3640,7 @@ img{
           "success",
           `Successfully updated ${this.selectedForQR.length} employees to Separated status!`
         );
-        this.fetchEmployees(); // Refresh the table
+        this.fetchEmployees(true); // Refresh the table
         this.selectedForQR = []; // Clear selection after update
       } catch (error) {
         console.error("Error batch updating employees:", error);
@@ -4826,23 +4780,26 @@ img{
 }
 
 .sig-canvas-wrapper {
-  border: 2px dashed #d1d5db;
-  border-radius: 8px;
-  background: #fff;
+  border: none;
+  border-radius: 0;
+  background: transparent;
   overflow: hidden;
-  transition: border-color 0.15s;
-}
-
-.sig-canvas-wrapper:hover {
-  border-color: #93c5fd;
 }
 
 .sig-canvas {
   display: block;
   width: 100%;
-  height: 180px;
+  height: 300px;
   cursor: crosshair;
   touch-action: none;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  transition: border-color 0.15s;
+}
+
+.sig-canvas:hover {
+  border-color: #93c5fd;
 }
 
 .sig-draw-actions {

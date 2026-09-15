@@ -98,7 +98,7 @@
     <!-- Alert -->
     <div class="alert-wrap" v-if="alert.showAlert">
       <div :class="['alert-box', `alert-${alert.variant}`]">
-        <font-awesome-icon :icon="alert.variant === 'success' ? 'check-circle' : 'exclamation-triangle'" class="mr-2"/>
+        <font-awesome-icon :icon="alert.variant === 'success' ? 'check-circle' : 'triangle-exclamation'" class="mr-2"/>
         {{ alert.message }}
         <button @click="alert.showAlert = 0" class="alert-x">
           <font-awesome-icon icon="times" />
