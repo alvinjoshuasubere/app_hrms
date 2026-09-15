@@ -36,6 +36,7 @@ module.exports = {
   plugins: [
     // "~/plugins/elastic.js",
     "~/plugins/fontawesome.js",
+    "~/plugins/axiosPerformance.js",
   ],
 
   // export default {
