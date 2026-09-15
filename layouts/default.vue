@@ -12,7 +12,7 @@
           </div>
         </div>
         <div class="portal-date">
-          <font-awesome-icon icon="shield-alt" />
+          <font-awesome-icon icon="circle-check" />
           <span>Secure HR Workspace</span>
         </div>
       </div>
@@ -29,7 +29,7 @@
           <b-collapse id="main-nav-collapse" is-nav>
             <b-navbar-nav class="portal-nav-links">
               <b-nav-item to="/dashboard" active-class="active">
-                <font-awesome-icon icon="chart-pie" />
+                <font-awesome-icon icon="chart-line" />
                 Dashboard
               </b-nav-item>
               <b-nav-item to="/employees" active-class="active">
@@ -37,7 +37,7 @@
                 Employees
               </b-nav-item>
               <b-nav-item to="/payroll" active-class="active">
-                <font-awesome-icon icon="money-check-alt" />
+                <font-awesome-icon icon="briefcase" />
                 Payroll
               </b-nav-item>
             </b-navbar-nav>
