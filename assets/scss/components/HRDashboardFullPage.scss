@@ -1,0 +1,255 @@
+/* =========================================================
+   HRMS DASHBOARD — TRUE FULL VIEWPORT / FULL BLEED
+   Final visual layer only. No API or business logic changes.
+   ========================================================= */
+
+html,
+body,
+#__nuxt,
+#__layout {
+  width: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #fff !important;
+}
+
+body {
+  overflow-x: hidden !important;
+}
+
+.hr-dashboard {
+  position: relative !important;
+  width: 100vw !important;
+  max-width: none !important;
+  min-width: 100vw !important;
+  min-height: 100vh !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  background: #fff !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+}
+
+/* Full viewport canvas. No centered dashboard wrapper. */
+.hr-dashboard .db-wrap {
+  width: 100vw !important;
+  max-width: none !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 0 48px !important;
+  background: #fff !important;
+}
+
+/* Every major dashboard section spans the complete viewport width. */
+.hr-dashboard .db-top.hr-hero,
+.hr-dashboard .hr-section-heading,
+.hr-dashboard .db-stats.hr-kpi-grid,
+.hr-dashboard .hr-chart-grid,
+.hr-dashboard .hr-department-panel,
+.hr-dashboard .hr-insight-grid,
+.hr-dashboard .hr-action-grid,
+.hr-dashboard .upcoming-panel {
+  width: 100vw !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* White page only — section surfaces use white as the base. */
+.hr-dashboard,
+.hr-dashboard .db-wrap,
+.hr-dashboard .hr-section-heading,
+.hr-dashboard .db-stats.hr-kpi-grid,
+.hr-dashboard .hr-action-grid,
+.hr-dashboard .upcoming-panel {
+  background: #fff !important;
+}
+
+/* Keep analytics readable without a gray outer page. */
+.hr-dashboard .hr-chart-grid,
+.hr-dashboard .hr-department-panel {
+  background: #fff !important;
+}
+
+.hr-dashboard .hr-insight-grid {
+  background: #fff !important;
+}
+
+/* Use the viewport naturally instead of a constrained max-width. */
+.hr-dashboard .db-top.hr-hero {
+  min-height: 220px !important;
+  padding-left: clamp(28px, 4vw, 72px) !important;
+  padding-right: clamp(28px, 4vw, 72px) !important;
+}
+
+.hr-dashboard .hr-section-heading {
+  min-height: 88px !important;
+  padding-left: clamp(28px, 4vw, 72px) !important;
+  padding-right: clamp(28px, 4vw, 72px) !important;
+}
+
+.hr-dashboard .db-stats.hr-kpi-grid {
+  padding-left: clamp(28px, 4vw, 72px) !important;
+  padding-right: clamp(28px, 4vw, 72px) !important;
+}
+
+.hr-dashboard .hr-chart-grid,
+.hr-dashboard .hr-department-panel,
+.hr-dashboard .hr-action-grid,
+.hr-dashboard .upcoming-panel {
+  padding-left: clamp(28px, 4vw, 72px) !important;
+  padding-right: clamp(28px, 4vw, 72px) !important;
+}
+
+.hr-dashboard .hr-insight-grid {
+  padding-left: clamp(28px, 4vw, 72px) !important;
+  padding-right: clamp(28px, 4vw, 72px) !important;
+}
+
+/* Remove old card/container width limitations. */
+.hr-dashboard .hr-panel,
+.hr-dashboard .card-c,
+.hr-dashboard .data-card,
+.hr-dashboard .chart-card {
+  max-width: none !important;
+}
+
+/* Seamless icons: simple, consistent, lightweight treatment. */
+.hr-dashboard .stat-icon,
+.hr-dashboard .card-title-icon,
+.hr-dashboard .hr-insight-icon,
+.hr-dashboard .upcoming-date {
+  box-shadow: none !important;
+  background: #eef5ff !important;
+  color: #1769e8 !important;
+}
+
+.hr-dashboard .stat-icon svg,
+.hr-dashboard .card-title-icon svg,
+.hr-dashboard .hr-insight-icon svg,
+.hr-dashboard .upcoming-date svg {
+  filter: none !important;
+}
+
+/* Remove heavy colored KPI icon gradients inherited from ModernUI. */
+.hr-dashboard .stat--total .stat-icon,
+.hr-dashboard .stat--active .stat-icon,
+.hr-dashboard .stat--dept .stat-icon,
+.hr-dashboard .stat--bday .stat-icon {
+  background: #eef5ff !important;
+  color: #1769e8 !important;
+}
+
+/* Full-width analytics charts. */
+.hr-dashboard .hr-chart-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+}
+
+.hr-dashboard .hr-chart-grid .card-c,
+.hr-dashboard .hr-department-panel,
+.hr-dashboard .hr-action-grid .card-c,
+.hr-dashboard .upcoming-panel .card-c__b {
+  width: 100% !important;
+}
+
+.hr-dashboard .hr-chart-grid .card-c__b {
+  min-height: 360px !important;
+}
+
+.hr-dashboard .hr-department-panel .card-c__b {
+  min-height: 340px !important;
+}
+
+/* Tables use the available horizontal space. */
+.hr-dashboard .hr-action-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 20px !important;
+}
+
+.hr-dashboard .hr-action-panel .card-c__b {
+  min-height: 320px !important;
+}
+
+.hr-dashboard .upcoming-birthday-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+/* Large monitors: make the dashboard feel genuinely expansive. */
+@media (min-width: 1600px) {
+  .hr-dashboard .db-top.hr-hero {
+    min-height: 250px !important;
+    padding-left: 5vw !important;
+    padding-right: 5vw !important;
+  }
+
+  .hr-dashboard .hr-section-heading,
+  .hr-dashboard .db-stats.hr-kpi-grid,
+  .hr-dashboard .hr-chart-grid,
+  .hr-dashboard .hr-department-panel,
+  .hr-dashboard .hr-insight-grid,
+  .hr-dashboard .hr-action-grid,
+  .hr-dashboard .upcoming-panel {
+    padding-left: 5vw !important;
+    padding-right: 5vw !important;
+  }
+
+  .hr-dashboard .db-stats .stat.hr-kpi {
+    min-height: 180px !important;
+    padding: 32px !important;
+  }
+
+  .hr-dashboard .db-stats .stat-num {
+    font-size: 2.8rem !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .hr-dashboard .upcoming-birthday-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .hr-dashboard .hr-chart-grid,
+  .hr-dashboard .hr-action-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hr-dashboard .upcoming-birthday-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hr-dashboard .db-top.hr-hero,
+  .hr-dashboard .hr-section-heading,
+  .hr-dashboard .db-stats.hr-kpi-grid,
+  .hr-dashboard .hr-chart-grid,
+  .hr-dashboard .hr-department-panel,
+  .hr-dashboard .hr-insight-grid,
+  .hr-dashboard .hr-action-grid,
+  .hr-dashboard .upcoming-panel {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .hr-dashboard .db-top.hr-hero,
+  .hr-dashboard .hr-section-heading,
+  .hr-dashboard .db-stats.hr-kpi-grid,
+  .hr-dashboard .hr-chart-grid,
+  .hr-dashboard .hr-department-panel,
+  .hr-dashboard .hr-insight-grid,
+  .hr-dashboard .hr-action-grid,
+  .hr-dashboard .upcoming-panel {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+}
