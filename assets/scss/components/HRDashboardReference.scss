@@ -206,3 +206,5 @@ body{background:#f5f0f4!important;color:#1c1c28}
 .hr-ref-main .hr-clean-table .custom-control-input:checked~.custom-control-label::before{background:#34539b;border-color:#34539b}
 .hr-ref-main .main-payroll-card>.card-body{overflow-x:auto!important}
 @media(max-width:740px){.hr-ref-main .hr-clean-table{min-width:720px}.hr-ref-main .main-employee-card .table-responsive{overflow-x:auto!important}.hr-ref-main .modern-filter-bar .search-section{max-width:none;flex-basis:100%}}
+
+.hr-ref-main .hr-inline-actions{display:flex;align-items:center;gap:5px;white-space:nowrap}.hr-ref-main .hr-inline-actions button{display:inline-flex;align-items:center;justify-content:center;width:29px;height:29px;padding:0;border:1px solid #e1e6f0;border-radius:5px;background:#fff;color:#34539b;cursor:pointer}.hr-ref-main .hr-inline-actions button:hover,.hr-ref-main .hr-inline-actions button:focus-visible{background:#d6ff3d;color:#243451;border-color:#34539b}
