@@ -627,7 +627,7 @@
             type="button"
             class="emp-staff-tab"
             :class="{ 'emp-staff-tab--active': employeeDetailTab === 0 }"
-            role="tab" :aria-selected="employeeDetailTab === 0" @click="employeeDetailTab = 0"
+            id="emp-detail-tab-0" role="tab" aria-controls="emp-detail-panel-0" :aria-selected="employeeDetailTab === 0" :tabindex="employeeDetailTab === 0 ? 0 : -1" @click="employeeDetailTab = 0" @keydown.left.prevent="moveEmployeeTab(-1)" @keydown.right.prevent="moveEmployeeTab(1)" @keydown.home.prevent="moveEmployeeTab(0, 0)" @keydown.end.prevent="moveEmployeeTab(0, 2)"
           >
             Personal Information
           </button>
@@ -635,7 +635,7 @@
             type="button"
             class="emp-staff-tab"
             :class="{ 'emp-staff-tab--active': employeeDetailTab === 1 }"
-            role="tab" :aria-selected="employeeDetailTab === 1" @click="employeeDetailTab = 1"
+            id="emp-detail-tab-1" role="tab" aria-controls="emp-detail-panel-1" :aria-selected="employeeDetailTab === 1" :tabindex="employeeDetailTab === 1 ? 0 : -1" @click="employeeDetailTab = 1" @keydown.left.prevent="moveEmployeeTab(-1)" @keydown.right.prevent="moveEmployeeTab(1)" @keydown.home.prevent="moveEmployeeTab(0, 0)" @keydown.end.prevent="moveEmployeeTab(0, 2)"
           >
             Employment Information
           </button>
@@ -643,7 +643,7 @@
             type="button"
             class="emp-staff-tab"
             :class="{ 'emp-staff-tab--active': employeeDetailTab === 2 }"
-            role="tab" :aria-selected="employeeDetailTab === 2" @click="employeeDetailTab = 2"
+            id="emp-detail-tab-2" role="tab" aria-controls="emp-detail-panel-2" :aria-selected="employeeDetailTab === 2" :tabindex="employeeDetailTab === 2 ? 0 : -1" @click="employeeDetailTab = 2" @keydown.left.prevent="moveEmployeeTab(-1)" @keydown.right.prevent="moveEmployeeTab(1)" @keydown.home.prevent="moveEmployeeTab(0, 0)" @keydown.end.prevent="moveEmployeeTab(0, 2)"
           >
             Contact &amp; IDs
           </button>
@@ -651,7 +651,7 @@
 
         <div class="emp-staff-panel-wrap">
           <!-- Tab: Staff profile -->
-          <div v-if="employeeDetailTab === 0" class="emp-staff-layout">
+          <div v-if="employeeDetailTab === 0" id="emp-detail-panel-0" role="tabpanel" aria-labelledby="emp-detail-tab-0" class="emp-staff-layout">
             <div class="emp-staff-col emp-staff-col--main">
               <div class="emp-staff-card">
                 <div class="emp-staff-card-head">
@@ -793,7 +793,7 @@
 
           <!-- Tab: Work information -->
           <div
-            v-else-if="employeeDetailTab === 1"
+            v-if="employeeDetailTab === 1" id="emp-detail-panel-1" role="tabpanel" aria-labelledby="emp-detail-tab-1"
             class="emp-staff-layout emp-staff-layout--stack"
           >
             <div class="emp-staff-card">
@@ -866,7 +866,7 @@
 
           <!-- Tab: Contact & IDs -->
           <div
-            v-else-if="employeeDetailTab === 2"
+            v-if="employeeDetailTab === 2" id="emp-detail-panel-2" role="tabpanel" aria-labelledby="emp-detail-tab-2"
             class="emp-staff-layout emp-staff-layout--split"
           >
             <div class="emp-staff-card">
@@ -2302,6 +2302,13 @@ export default {
     },
   },
   methods: {
+    moveEmployeeTab(step, target) {
+      this.employeeDetailTab = typeof target === "number" ? target : (this.employeeDetailTab + step + 3) % 3;
+      this.$nextTick(() => {
+        const tab = document.getElementById("emp-detail-tab-" + this.employeeDetailTab);
+        if (tab) tab.focus();
+      });
+    },
     logout() {
       localStorage.clear();
       this.$router.push(`/`);
@@ -5043,4 +5050,14 @@ img{
 .emp-staff-modal-root .emp-staff-tab--active{background:#1d4ed8!important;color:#ffffff!important;box-shadow:inset 0 -3px #dbeafe!important}
 .emp-staff-modal-root .emp-staff-tab:not(.emp-staff-tab--active):hover{background:#eff6ff!important;color:#1d4ed8!important}
 @media(max-width:480px){.emp-staff-modal-root .emp-staff-tab{font-size:11px!important;padding:9px 4px!important}}
+</style>
+<style>
+.emp-staff-modal-root .emp-staff-modal,.emp-staff-modal-root .emp-staff-summary-name,.emp-staff-modal-root .emp-staff-summary-role,.emp-staff-modal-root .emp-staff-meta-label,.emp-staff-modal-root .emp-staff-meta-value,.emp-staff-modal-root .emp-staff-kv-label,.emp-staff-modal-root .emp-staff-kv-value,.emp-staff-modal-root .emp-staff-card-head h3,.emp-staff-modal-root .emp-staff-summary-meta h3{color:#000!important}
+.emp-staff-modal-root .emp-profile-content,.emp-staff-modal-root .emp-staff-panel-wrap{min-width:0;width:100%}
+.emp-staff-modal-root .emp-staff-tabs{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;gap:4px!important;padding:4px!important;background:#f1f5f9!important;border:1px solid #e2e8f0!important;border-radius:8px!important;margin-bottom:16px!important}
+.emp-staff-modal-root .emp-staff-tab{display:flex!important;align-items:center;justify-content:center;min-height:48px;width:100%;min-width:0;color:#000!important;background:transparent!important;border:1px solid transparent!important;border-radius:6px!important;font-size:13px!important;font-weight:600!important;white-space:normal!important;overflow-wrap:anywhere;line-height:1.35}
+.emp-staff-modal-root .emp-staff-tab.emp-staff-tab--active{background:#dbeafe!important;color:#000!important;border-color:#93c5fd!important;box-shadow:inset 0 -3px #1d4ed8!important}
+.emp-staff-modal-root .emp-staff-tab:not(.emp-staff-tab--active):hover{background:#e2e8f0!important;color:#000!important}
+.emp-staff-modal-root .emp-staff-tab:focus-visible{outline:2px solid #1d4ed8;outline-offset:1px}
+@media(max-width:480px){.emp-staff-modal-root .emp-staff-tab{font-size:11px!important;padding:8px 3px!important}}
 </style>
