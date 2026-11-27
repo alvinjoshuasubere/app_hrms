@@ -25,7 +25,7 @@ export default {};
 .hrms-loading-overlay {
   position: fixed; inset: 0; z-index: 99999;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(0, 46, 44, 0.94);
+  background: rgba(15, 23, 42, 0.94);
   animation: hrmsCubeFade .15s ease-out;
 }
 .hrms-cube-loader { display:flex; flex-direction:column; align-items:center; gap:18px; font-family:"Courier New",monospace; }
