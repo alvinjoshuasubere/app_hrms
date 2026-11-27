@@ -224,7 +224,7 @@ export default {
       banks: [],
       periods: [],
       fields: [
-        { key: "IDNo", label: "ID", sortable: true },
+        { key: "SSL_ID", label: "SSL", sortable: true },
         {
           key: "Name",
           label: "Employee Name",

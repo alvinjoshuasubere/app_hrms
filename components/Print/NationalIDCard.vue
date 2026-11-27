@@ -252,7 +252,6 @@
 </template>
 
 <script>
-import axios from "axios";
 import QRCode from "qrcode";
 
 export default {
@@ -369,8 +368,8 @@ export default {
       if (!this.empid) return;
       this.loading = true;
       try {
-        const res = await axios.get(
-          `http://192.168.0.26:2000/api-hrms/employees/get-one`,
+        const res = await this.$axios.get(
+          `${this.$axios.defaults.baseURL}/employees/get-one`,
           { params: { empid: this.empid } }
         );
         this.data = (res.data && res.data[0]) || {};

@@ -60,7 +60,7 @@ module.exports = {
    ** Build configuration
    */
   axios: {
-    baseURL: "http://192.168.0.26:2000/api-hrms",
+    baseURL: "http://192.168.0.26:2001/api-hrms",
   },
 
   build: {

@@ -264,127 +264,132 @@
               </div>
             </div>
 
-            <b-table
-              head-variant="light"
-              style="font-size: 12px"
-              class="my-3"
-              show-empty
-              stacked="md"
-              :current-page="currentPage"
-              :per-page="perPage"
-              :busy.sync="showLoading"
-              :items="filteredEmployees"
-              @row-clicked="viewEmployee"
-              :fields="fields"
-              :sticky-header="'400px'"
-              empty-text="No employees found"
+            <div
+              class="table-responsive"
+              style="overflow-x: auto; max-width: 100%"
             >
-              <template v-slot:cell(image)="row">
-                <div class="employee-photo-cell">
-                  <img
-                    :src="
-                      formatSignatureSrc(
-                        row.item.photo64 || row.item.photo_url
-                      ) || '/user.jpg'
-                    "
-                    :alt="row.item.fullname"
-                    class="employee-thumbnail"
-                  />
-                </div>
-              </template>
-              <template v-slot:cell(division_desc)="row">
-                <span>
+              <b-table
+                head-variant="light"
+                style="font-size: 12px"
+                class="my-3"
+                show-empty
+                stacked="md"
+                :current-page="currentPage"
+                :per-page="perPage"
+                :busy.sync="showLoading"
+                :items="filteredEmployees"
+                @row-clicked="viewEmployee"
+                :fields="fields"
+                :sticky-header="'400px'"
+                empty-text="No employees found"
+              >
+                <template v-slot:cell(image)="row">
+                  <div class="employee-photo-cell">
+                    <img
+                      :src="
+                        formatSignatureSrc(
+                          row.item.photo64 || row.item.photo_url
+                        ) || '/user.jpg'
+                      "
+                      :alt="row.item.fullname"
+                      class="employee-thumbnail"
+                    />
+                  </div>
+                </template>
+                <template v-slot:cell(division_desc)="row">
+                  <span>
+                    {{
+                      row.item.division_desc ||
+                      row.item.divisiondesc ||
+                      row.item.division ||
+                      "—"
+                    }}
+                  </span>
+                </template>
+                <template v-slot:cell(isseparated)="row">
+                  <div
+                    :class="[
+                      'status-circle mr-2',
+                      !row.item.isseparated ? 'active' : 'separated',
+                    ]"
+                  ></div>
                   {{
-                    row.item.division_desc ||
-                    row.item.divisiondesc ||
-                    row.item.division ||
-                    "—"
+                    row.item.isseparated
+                      ? "Separated"
+                      : row.item.issuspended
+                      ? "Suspended"
+                      : "Active"
                   }}
-                </span>
-              </template>
-              <template v-slot:cell(isseparated)="row">
-                <div
-                  :class="[
-                    'status-circle mr-2',
-                    !row.item.isseparated ? 'active' : 'separated',
-                  ]"
-                ></div>
-                {{
-                  row.item.isseparated
-                    ? "Separated"
-                    : row.item.issuspended
-                    ? "Suspended"
-                    : "Active"
-                }}
-              </template>
-              <template v-slot:cell(actions)="row">
-                <div class="action-btn-group">
-                  <b-button
-                    size="sm"
-                    variant=""
-                    class="tableButton"
-                    @click="generateQRCode(row.item)"
-                    v-b-tooltip.noninteractive.hover
-                    title="Generate QR Code"
-                  >
-                    <font-awesome-icon icon="qrcode" />
-                  </b-button>
-                  <b-button
-                    size="sm"
-                    variant="primary"
-                    class="tableButton"
-                    @click="openNationalIDModal(row.item)"
-                    v-b-tooltip.noninteractive.hover
-                    title="Generate ID Card"
-                  >
-                    <font-awesome-icon icon="id-card" />
-                  </b-button>
-                  <b-button
-                    size="sm"
-                    variant="success"
-                    class="tableButton"
-                    @click="openSignatureModal(row.item)"
-                    v-b-tooltip.noninteractive.hover
-                    title="Upload Signature"
-                  >
-                    <font-awesome-icon icon="signature" />
-                  </b-button>
-                </div>
-              </template>
-
-              <!-- QR select column: individual checkbox -->
-              <template v-slot:cell(qr_select)="row">
-                <div
-                  class="d-flex justify-content-center align-items-center h-100"
-                >
-                  <b-form-checkbox
-                    :checked="isQRSelected(row.item)"
-                    @change="toggleQRSelection(row.item)"
-                    class="qr-select-checkbox"
-                  />
-                </div>
-              </template>
-
-              <!-- QR select column: header with select-all checkbox -->
-              <template v-slot:head(qr_select)>
-                <span style="font-size: 11px">QR</span>
-              </template>
-              <template v-slot:table-caption>
-                <b-row align-h="end">
-                  <b-col cols="6">{{ bottomLabel }}</b-col>
-                  <b-col cols="6">
-                    <b-pagination
-                      v-model="currentPage"
-                      :total-rows="filteredTotalRows"
-                      :per-page="perPage"
-                      pills
-                      align="right"
+                </template>
+                <template v-slot:cell(actions)="row">
+                  <div class="action-btn-group">
+                    <b-button
                       size="sm"
-                    ></b-pagination>
-                  </b-col>
-                </b-row>
-              </template>
-            </b-table>
+                      variant=""
+                      class="tableButton"
+                      @click="generateQRCode(row.item)"
+                      v-b-tooltip.noninteractive.hover
+                      title="Generate QR Code"
+                    >
+                      <font-awesome-icon icon="qrcode" />
+                    </b-button>
+                    <b-button
+                      size="sm"
+                      variant="primary"
+                      class="tableButton"
+                      @click="openNationalIDModal(row.item)"
+                      v-b-tooltip.noninteractive.hover
+                      title="Generate ID Card"
+                    >
+                      <font-awesome-icon icon="id-card" />
+                    </b-button>
+                    <b-button
+                      size="sm"
+                      variant="success"
+                      class="tableButton"
+                      @click="openSignatureModal(row.item)"
+                      v-b-tooltip.noninteractive.hover
+                      title="Upload Signature"
+                    >
+                      <font-awesome-icon icon="signature" />
+                    </b-button>
+                  </div>
+                </template>
+
+                <!-- QR select column: individual checkbox -->
+                <template v-slot:cell(qr_select)="row">
+                  <div
+                    class="d-flex justify-content-center align-items-center h-100"
+                  >
+                    <b-form-checkbox
+                      :checked="isQRSelected(row.item)"
+                      @change="toggleQRSelection(row.item)"
+                      class="qr-select-checkbox"
+                    />
+                  </div>
+                </template>
+
+                <!-- QR select column: header with select-all checkbox -->
+                <template v-slot:head(qr_select)>
+                  <span style="font-size: 11px">QR</span>
+                </template>
+                <template v-slot:table-caption>
+                  <b-row align-h="end">
+                    <b-col cols="6">{{ bottomLabel }}</b-col>
+                    <b-col cols="6">
+                      <b-pagination
+                        v-model="currentPage"
+                        :total-rows="filteredTotalRows"
+                        :per-page="perPage"
+                        pills
+                        align="right"
+                        size="sm"
+                      ></b-pagination>
+                    </b-col>
+                  </b-row>
+                </template>
+              </b-table>
+            </div>
           </b-card>
         </b-col>
       </b-row>
@@ -757,13 +762,16 @@
                       formatCompleteAddress() || "—"
                     }}</span>
                   </div>
-                  <div
-                    v-if="employeeDetails.imageSignature64"
-                    class="emp-staff-kv-full"
-                  >
-                    <span class="emp-staff-kv-label">Signature</span>
+                  <div class="emp-staff-kv-full">
+                    <span class="emp-staff-kv-label"
+                      >Signature &amp; SSL</span
+                    >
+                    <span class="emp-staff-kv-value"
+                      >SSL ID: {{ employeeDetails.SSL_ID || "none" }}</span
+                    >
                     <div class="signature-detail-wrapper">
                       <b-button
+                        v-if="employeeDetails.imageSignature64"
                         size="sm"
                         variant="outline-primary"
                         @click="
@@ -774,6 +782,15 @@
                       >
                         <font-awesome-icon icon="signature" class="mr-1" />
                         View Signature
+                      </b-button>
+                      <b-button
+                        size="sm"
+                        variant="outline-primary"
+                        class="ml-2"
+                        @click="openSslUpdateModal"
+                      >
+                        <font-awesome-icon icon="id-card-clip" class="mr-1" />
+                        Update SSL
                       </b-button>
                     </div>
                   </div>
@@ -1776,6 +1793,93 @@
       </div>
     </b-modal>
 
+    <!-- Update SSL ID Modal -->
+    <b-modal
+      id="employee-ssl-update-modal"
+      v-model="showSslUpdateModal"
+      header-class="hrmsColor"
+      modal-class="staff-quick-edit-modal"
+      size="md"
+      centered
+      body-class="p-0"
+      @hidden="onSslUpdateModalHidden"
+    >
+      <template #modal-title>
+        <div class="modal-title-header">
+          <div class="modal-title-icon">
+            <font-awesome-icon icon="id-card-clip" />
+          </div>
+          <div class="modal-title-text">
+            <span class="modal-title-main text-left">Update SSL ID</span>
+            <span class="modal-title-desc"
+              >Set the employee SSL ID used in payroll/JEV</span
+            >
+          </div>
+        </div>
+      </template>
+
+      <div v-if="sslUpdateForm" class="sqe-container">
+        <b-form class="sqe-form" @submit.prevent="saveSslUpdate">
+          <div class="sqe-section">
+            <div class="sqe-section-header">
+              <div class="sqe-section-icon-wrap sqe-section-icon--blue">
+                <font-awesome-icon icon="user" />
+              </div>
+              <h5 class="sqe-section-title">Employee</h5>
+            </div>
+            <div class="sqe-section-body">
+              <div class="sqe-form-grid sqe-text-left">
+                <b-form-group label="Full Name">
+                  <b-form-input :value="sslUpdateForm.fullname" disabled />
+                </b-form-group>
+              </div>
+            </div>
+          </div>
+
+          <div class="sqe-section">
+            <div class="sqe-section-header">
+              <div class="sqe-section-icon-wrap sqe-section-icon--blue">
+                <font-awesome-icon icon="id-card-clip" />
+              </div>
+              <h5 class="sqe-section-title">SSL ID</h5>
+            </div>
+            <div class="sqe-section-body">
+              <div class="sqe-form-grid sqe-text-left">
+                <b-form-group label="SSL ID" label-for="ssl-id-input">
+                  <b-form-input
+                    id="ssl-id-input"
+                    v-model="sslUpdateForm.SSL_ID"
+                    placeholder="none"
+                  />
+                </b-form-group>
+              </div>
+            </div>
+          </div>
+        </b-form>
+      </div>
+
+      <template #modal-footer>
+        <div class="staff-quick-edit-footer">
+          <b-button
+            size="sm"
+            variant="outline-secondary"
+            @click="showSslUpdateModal = false"
+          >
+            Cancel
+          </b-button>
+          <b-button
+            size="sm"
+            variant="primary"
+            :disabled="!sslUpdateForm || isSavingSsl"
+            @click="saveSslUpdate"
+          >
+            <font-awesome-icon icon="save" class="mr-1" />
+            Save Changes
+          </b-button>
+        </div>
+      </template>
+    </b-modal>
+
     <div v-if="alert.showAlert > 0" class="alert-container">
       <b-alert
         :show="alert.showAlert"
@@ -1904,6 +2008,9 @@ export default {
       nationalIDEmployee: null,
       staffQuickEditForm: null,
       quickEditDivisions: [],
+      showSslUpdateModal: false,
+      sslUpdateForm: null,
+      isSavingSsl: false,
       selectedForQR: [],
       showConfirmModal: false,
       showMultipleQRModal: false,
@@ -1915,53 +2022,84 @@ export default {
           label: "",
           sortable: false,
           class: "text-center",
+          tdClass: "align-middle",
+          thStyle: { width: "40px" },
         },
-        { key: "image", label: "Photo", sortable: false },
-        { key: "empno", label: "Employee No.", sortable: true },
-        { key: "swipe_id", label: "Swipe ID", sortable: true },
+        {
+          key: "image",
+          label: "Photo",
+          sortable: false,
+          thStyle: { width: "50px" },
+          tdClass: "align-middle",
+        },
+        {
+          key: "empno",
+          label: "Employee No.",
+          sortable: true,
+          thStyle: { width: "110px" },
+        },
+        {
+          key: "swipe_id",
+          label: "Swipe ID",
+          sortable: true,
+          thStyle: { width: "90px" },
+        },
         {
           key: "fullname",
           label: "Full Name",
           sortable: true,
           class: "text-left",
+          thStyle: { width: "180px" },
         },
         {
           key: "deptdesc",
           label: "Department",
           sortable: true,
           class: "text-left",
+          thStyle: { width: "160px" },
         },
         {
           key: "division_desc",
           label: "Division",
           sortable: true,
           class: "text-left",
+          thStyle: { width: "150px" },
         },
         {
           key: "position_desc",
           label: "Position",
           sortable: true,
           class: "text-left",
+          thStyle: { width: "160px" },
         },
         {
           key: "EmploymentStatus",
           label: "Employment Status",
           sortable: false,
           class: "text-center",
+          thStyle: { width: "130px" },
         },
         {
           key: "isseparated",
           label: "Status",
           sortable: false,
           class: "text-center",
+          thStyle: { width: "90px" },
         },
         {
           key: "isApprover",
           label: "Approver",
           sortable: false,
           class: "text-center",
+          thStyle: { width: "70px" },
         },
-        { key: "actions", label: "Actions", sortable: false },
+        {
+          key: "actions",
+          label: "Actions",
+          sortable: false,
+          thStyle: { width: "130px" },
+          tdClass: "align-middle",
+        },
       ],
     };
   },
@@ -2297,9 +2435,13 @@ export default {
       if (!hireDate) return "—";
       const hire = new Date(hireDate);
       const now = new Date();
-      const years = now.getFullYear() - hire.getFullYear();
-      const months = now.getMonth() - hire.getMonth();
-      const totalMonths = years * 12 + months;
+      let totalMonths =
+        (now.getFullYear() - hire.getFullYear()) * 12 +
+        (now.getMonth() - hire.getMonth());
+      if (now.getDate() < hire.getDate()) {
+        totalMonths -= 1;
+      }
+      if (totalMonths < 0) totalMonths = 0;
       const y = Math.floor(totalMonths / 12);
       const m = totalMonths % 12;
       if (y === 0) return `${m} month${m !== 1 ? "s" : ""}`;
@@ -2336,7 +2478,6 @@ export default {
           this.showAlert("No employee details returned.", "warning");
           return;
         }
-        console.log(row, "DETAILS");
         this.employeeDetails = row;
         this.employeeDetailTab = 0;
         this.profilePhotoFailed = false;
@@ -2446,6 +2587,49 @@ export default {
     onQuickEditModalHidden() {
       this.staffQuickEditForm = null;
       this.quickEditDivisions = [];
+    },
+    openSslUpdateModal() {
+      const e = this.employeeDetails;
+      if (!e) return;
+      this.sslUpdateForm = {
+        empid: e.empid,
+        fullname: e.fullname,
+        SSL_ID: e.SSL_ID || "",
+      };
+      this.showSslUpdateModal = true;
+    },
+    onSslUpdateModalHidden() {
+      this.sslUpdateForm = null;
+    },
+    async saveSslUpdate() {
+      const f = this.sslUpdateForm;
+      if (!f) return;
+
+      try {
+        this.isSavingSsl = true;
+        this.showLoading = true;
+        await axios({
+          method: "PUT",
+          url: `${this.$axios.defaults.baseURL}/employees/update-ssl-id/${f.empid}`,
+          data: {
+            SSL_ID: f.SSL_ID || "",
+          },
+        });
+        this.showAlert("SSL ID updated successfully.", "success");
+        this.showSslUpdateModal = false;
+        await this.refetchEmployeeDetails();
+        await this.fetchEmployees(true);
+      } catch (error) {
+        console.error("Error saving SSL ID:", error);
+        const msg =
+          error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          "Failed to save SSL ID.";
+        this.showAlert(msg, "danger");
+      } finally {
+        this.isSavingSsl = false;
+        this.showLoading = false;
+      }
     },
     formatDate(dateString) {
       if (!dateString) return "";
@@ -3411,7 +3595,7 @@ img{
           url: `${this.$axios.defaults.baseURL}/employees/get-all`,
           params: params,
         });
-
+        console.log(res.data);
         const payload = res.data;
 
         if (Array.isArray(payload)) {
