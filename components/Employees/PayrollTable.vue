@@ -101,13 +101,15 @@
 
             <b-card-body class="pb-0">
               <b-table
-                striped
                 hover
-                :items="paginatedEmployees"
+                :items="filteredEmployees"
+                :current-page="currentPage"
+                :per-page="perPage"
                 :fields="fields"
                 show-empty
-                class="payroll-table-sm"
+                class="payroll-table-sm hr-clean-table"
               >
+                <template #cell(Name)="data"><div class="hr-person"><span class="hr-person-initial">{{String(data.value || "?").charAt(0).toUpperCase()}}</span><strong>{{data.value}}</strong></div></template>
                 <template #cell(basic_pay)="data">
                   <span class="font-weight-bold">{{
                     formatCurrency(data.value)
@@ -132,7 +134,6 @@
                         v-model="currentPage"
                         :total-rows="filteredEmployees.length"
                         :per-page="perPage"
-                        pills
                         align="right"
                         size="sm"
                         class="pagination-nav"
@@ -312,6 +313,7 @@ export default {
     this.fetchPeriods();
   },
   watch: {
+    perPage() { this.currentPage = 1; },
     searchText() {
       this.currentPage = 1;
       this.debouncedFetchEmployees();
