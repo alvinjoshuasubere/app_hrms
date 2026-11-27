@@ -281,9 +281,7 @@
                 :fields="fields"
                 empty-text="No employees found"
               >
-                <template v-slot:cell(fullname)="row">
-                  <div class="hr-person"><img :src="formatSignatureSrc(row.item.photo64 || row.item.photo_url) || '/user.jpg'" :alt="''" class="hr-person-avatar"/><div><strong>{{row.item.fullname}}</strong><small>{{row.item.empno}}</small></div></div>
-                </template>
+                <template v-slot:cell(fullname)="row"><div class="hr-person"><div><strong>{{row.item.fullname}}</strong><small>{{row.item.empno}}</small></div></div></template>
                 <template v-slot:cell(division_desc)="row">
                   <span>
                     {{
@@ -296,12 +294,11 @@
                 </template>
                 <template v-slot:cell(isseparated)="row"><span class="hr-status" :class="row.item.isseparated ? 'separated' : row.item.issuspended ? 'suspended' : 'active'"><i></i>{{row.item.isseparated ? 'Separated' : row.item.issuspended ? 'Suspended' : 'Active'}}</span></template>
                 <template v-slot:cell(actions)="row">
-                  <b-dropdown variant="link" size="sm" no-caret right boundary="viewport" class="hr-row-menu" @click.native.stop>
-                    <template #button-content><font-awesome-icon icon="ellipsis-v"/><span class="sr-only">Employee actions</span></template>
-                    <b-dropdown-item-button @click="generateQRCode(row.item)">Generate QR Code</b-dropdown-item-button>
-                    <b-dropdown-item-button @click="openNationalIDModal(row.item)">Generate ID Card</b-dropdown-item-button>
-                    <b-dropdown-item-button @click="openSignatureModal(row.item)">Upload Signature</b-dropdown-item-button>
-                  </b-dropdown>
+                  <div class="hr-inline-actions" @click.stop>
+                    <button type="button" title="Generate QR Code" aria-label="Generate QR Code" @click="generateQRCode(row.item)"><font-awesome-icon icon="qrcode"/></button>
+                    <button type="button" title="Generate ID Card" aria-label="Generate ID Card" @click="openNationalIDModal(row.item)"><font-awesome-icon icon="id-card"/></button>
+                    <button type="button" title="Upload Signature" aria-label="Upload Signature" @click="openSignatureModal(row.item)"><font-awesome-icon icon="signature"/></button>
+                  </div>
                 </template>
 
                 <!-- QR select column: individual checkbox -->
@@ -2019,13 +2016,6 @@ export default {
           sortable: false,
           class: "text-center",
           thStyle: { width: "90px" },
-        },
-        {
-          key: "isApprover",
-          label: "Approver",
-          sortable: false,
-          class: "text-center",
-          thStyle: { width: "70px" },
         },
         {
           key: "actions",
