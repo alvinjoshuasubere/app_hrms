@@ -1,47 +1,31 @@
 <template>
-  <div class="dashboard hr-dashboard">
-    <Loading v-if="loading" />
+  <div class="dashboard hr-dashboard hr-ref-dashboard">
+    <Loading v-if="loading"/>
     <div class="db-wrap">
-      <section class="db-top hr-hero">
-        <div class="db-heading">
-          <div class="db-kicker"><span class="db-kicker-dot"></span> HUMAN RESOURCE MANAGEMENT SYSTEM</div>
-          <h2 class="db-title">HR Dashboard</h2>
-          <p class="db-desc">Workforce overview, employee demographics, organizational distribution and HR action items.</p>
-        </div>
-        <div class="db-date"><font-awesome-icon icon="calendar-alt" /> {{ currentDate }}</div>
+      <header class="hr-ref-header">
+        <div><p class="hr-ref-eyebrow">HUMAN RESOURCE MANAGEMENT</p><h1>Dashboard</h1><p class="hr-ref-subtitle">Your workforce at a glance</p></div>
+        <div class="hr-ref-header-tools"><div class="hr-ref-search"><font-awesome-icon icon="search"/><input v-model="search" placeholder="Search employees" aria-label="Search employee lists"/></div><div class="hr-ref-date">{{ currentDate }}</div></div>
+      </header>
+      <section class="hr-ref-kpis" aria-label="Workforce overview">
+        <div class="hr-ref-card hr-ref-kpi"><div class="hr-ref-kpi-label">Total employees</div><div class="hr-ref-kpi-line"><strong>{{ employees.length }}</strong><span class="hr-ref-kpi-icon purple"><font-awesome-icon icon="users"/></span></div><small>Active employee records</small></div>
+        <div class="hr-ref-card hr-ref-kpi"><div class="hr-ref-kpi-label">Departments</div><div class="hr-ref-kpi-line"><strong>{{ departments.length }}</strong><span class="hr-ref-kpi-icon lilac"><font-awesome-icon icon="building"/></span></div><small>Offices represented</small></div>
+        <div class="hr-ref-card hr-ref-kpi"><div class="hr-ref-kpi-label">Average age</div><div class="hr-ref-kpi-line"><strong>{{ averageAge }}</strong><span class="hr-ref-kpi-icon orange"><font-awesome-icon icon="user-clock"/></span></div><small>Years, based on birthdates</small></div>
+        <div class="hr-ref-card hr-ref-kpi"><div class="hr-ref-kpi-label">HR action items</div><div class="hr-ref-kpi-line"><strong>{{ attentionCount }}</strong><span class="hr-ref-kpi-icon mint"><font-awesome-icon icon="bell"/></span></div><small>Birthdays and retirement watch</small></div>
       </section>
-
-      <div class="hr-section-heading"><div><span class="hr-section-number">01</span><div><h3>Workforce Snapshot</h3><p>Quick indicators for today's HR operations</p></div></div></div>
-      <section class="db-stats hr-kpi-grid">
-        <div class="stat stat--total hr-kpi"><div class="stat-info"><span class="stat-label-top">WORKFORCE</span><span class="stat-num">{{ employees.length }}</span><span class="stat-lbl">Active Employee Records</span><span class="kpi-note"><font-awesome-icon icon="circle-check" /> Current workforce</span></div><div class="stat-icon"><font-awesome-icon icon="users" /></div></div>
-        <div class="stat stat--active hr-kpi"><div class="stat-info"><span class="stat-label-top">ORGANIZATION</span><span class="stat-num">{{ departments.length }}</span><span class="stat-lbl">Departments</span><span class="kpi-note"><font-awesome-icon icon="building" /> Offices represented</span></div><div class="stat-icon"><font-awesome-icon icon="building" /></div></div>
-        <div class="stat stat--dept hr-kpi"><div class="stat-info"><span class="stat-label-top">DEMOGRAPHICS</span><span class="stat-num">{{ averageAge }}</span><span class="stat-lbl">Average Employee Age</span><span class="kpi-note"><font-awesome-icon icon="user-clock" /> Based on birthdate records</span></div><div class="stat-icon"><font-awesome-icon icon="user-clock" /></div></div>
-        <div class="stat stat--bday hr-kpi hr-kpi-alert"><div class="stat-info"><span class="stat-label-top">HR ACTION</span><span class="stat-num">{{ attentionCount }}</span><span class="stat-lbl">Items Requiring Attention</span><span class="kpi-note"><font-awesome-icon icon="triangle-exclamation" /> Birthdays & retirement watch</span></div><div class="stat-icon"><font-awesome-icon icon="bell" /></div></div>
+      <section class="hr-ref-chart-grid">
+        <article class="hr-ref-card hr-ref-chart"><div class="hr-ref-panel-title"><div><h2>Employment status</h2><p>Workforce composition</p></div></div><div class="hr-ref-chart-area" ref="statusChart"></div></article>
+        <article class="hr-ref-card hr-ref-chart"><div class="hr-ref-panel-title"><div><h2>Employees per department</h2><p>Workforce distribution by office</p></div></div><div class="hr-ref-chart-area" ref="deptChart"></div></article>
+        <article class="hr-ref-card hr-ref-chart"><div class="hr-ref-panel-title"><div><h2>Gender distribution</h2><p>Employee demographic profile</p></div></div><div class="hr-ref-chart-area" ref="genderChart"></div></article>
       </section>
-
-      <div class="hr-section-heading"><div><span class="hr-section-number">02</span><div><h3>Workforce Analytics</h3><p>Understand employee composition and organizational distribution</p></div></div><span class="hr-section-badge"><font-awesome-icon icon="chart-line" /> LIVE RECORDS</span></div>
-      <section class="db-charts hr-chart-grid">
-        <div class="card-c chart-card hr-panel"><div class="card-c__h"><div class="card-title-icon"><font-awesome-icon icon="briefcase" /></div><div><span class="card-title">Employment Status</span><small>Workforce composition by employment type</small></div></div><div class="card-c__b" ref="statusChart"></div></div>
-        <div class="card-c chart-card hr-panel"><div class="card-c__h"><div class="card-title-icon"><font-awesome-icon icon="venus-mars" /></div><div><span class="card-title">Gender Distribution</span><small>Employee demographic profile</small></div></div><div class="card-c__b" ref="genderChart"></div></div>
+      <section class="hr-ref-bottom-grid">
+        <article class="hr-ref-card hr-ref-panel"><div class="hr-ref-panel-title"><div><h2>Retirement watch</h2><p>Employees aged 60 to 65</p></div><span class="hr-ref-count">{{ retirees.length }}</span></div><div class="hr-ref-table-wrap"><table class="hr-ref-table"><thead><tr><th>Employee</th><th>Department</th><th>Age</th></tr></thead><tbody><tr v-for="emp in filteredRetirees" :key="emp.empid"><td><strong>{{ emp.fullname }}</strong></td><td>{{ emp.deptdesc || "—" }}</td><td><span class="hr-ref-age">{{ emp.age }}</span></td></tr><tr v-if="!filteredRetirees.length"><td colspan="3" class="hr-ref-empty">No matching employees on retirement watch</td></tr></tbody></table></div><button v-if="retirees.length>retireesLimit" type="button" class="hr-ref-more" @click="retireesExpanded=!retireesExpanded">{{ retireesExpanded ? 'Show fewer' : 'View all retirement watch' }} →</button></article>
+        <article class="hr-ref-card hr-ref-panel"><div class="hr-ref-panel-title"><div><h2>Upcoming birthdays</h2><p>Next 30 days</p></div><span class="hr-ref-count">{{ upcomingBirthdays.length }}</span></div><div class="hr-ref-birthday-list"><div v-for="emp in filteredBirthdays" :key="emp.empid" class="hr-ref-birthday-row"><div class="hr-ref-avatar">{{ (emp.fullname||'?').charAt(0) }}</div><div class="hr-ref-person"><strong>{{ emp.fullname }}</strong><small>{{ emp.deptdesc || 'Department not specified' }}</small></div><div class="hr-ref-birthday-date"><strong>{{ formatMonthDay(emp.birthdate) }}</strong><small>In {{ emp.daysUntil }} days</small></div></div><p v-if="!filteredBirthdays.length" class="hr-ref-empty">No upcoming birthdays matching your search</p></div></article>
       </section>
-      <section class="card-c card-c--f chart-card dept-card hr-panel hr-department-panel"><div class="card-c__h"><div class="card-title-icon"><font-awesome-icon icon="chart-column" /></div><div><span class="card-title">Employees per Department</span><small>Distribution of active employees across offices and departments</small></div></div><div class="card-c__b" ref="deptChart"></div></section>
-
-      <div class="hr-section-heading"><div><span class="hr-section-number">03</span><div><h3>HR Demographic Insights</h3><p>Useful indicators for workforce planning and management</p></div></div></div>
-      <section class="hr-insight-grid">
-        <div class="hr-insight-card"><div class="hr-insight-icon"><font-awesome-icon icon="user-group" /></div><div><span>Largest Gender Group</span><strong>{{ dominantGender }}</strong><small>{{ dominantGenderCount }} employees</small></div></div>
-        <div class="hr-insight-card"><div class="hr-insight-icon"><font-awesome-icon icon="briefcase" /></div><div><span>Largest Employment Type</span><strong>{{ dominantEmployment }}</strong><small>{{ dominantEmploymentCount }} employees</small></div></div>
-        <div class="hr-insight-card"><div class="hr-insight-icon"><font-awesome-icon icon="cake-candles" /></div><div><span>Birthdays Today</span><strong>{{ birthdayToday.length }}</strong><small>{{ birthdayToday.length ? 'Send greetings / acknowledge employees' : 'No birthdays today' }}</small></div></div>
-        <div class="hr-insight-card"><div class="hr-insight-icon"><font-awesome-icon icon="hourglass-half" /></div><div><span>Retirement Watch</span><strong>{{ retirees.length }}</strong><small>Employees age 60–65</small></div></div>
+      <section class="hr-ref-insights">
+        <div><span class="hr-ref-insight-dot purple"></span><div><small>Largest gender group</small><strong>{{ dominantGender }}</strong><span>{{ dominantGenderCount }} employees</span></div></div>
+        <div><span class="hr-ref-insight-dot orange"></span><div><small>Largest employment type</small><strong>{{ dominantEmployment }}</strong><span>{{ dominantEmploymentCount }} employees</span></div></div>
+        <div><span class="hr-ref-insight-dot mint"></span><div><small>Birthdays today</small><strong>{{ birthdayToday.length }}</strong><span>Celebrating employees</span></div></div>
       </section>
-
-      <div class="hr-section-heading"><div><span class="hr-section-number">04</span><div><h3>HR Action Center</h3><p>Records that may require immediate HR attention</p></div></div></div>
-      <section class="hr-action-grid">
-        <div class="card-c data-card hr-panel hr-action-panel"><div class="card-c__h"><div class="card-title-icon"><font-awesome-icon icon="gift" /></div><div><span class="card-title">Birthday Today</span><small>Employees celebrating today</small></div><span class="card-c__badge">{{ birthdayToday.length }}</span></div><div class="card-c__b card-table-body"><div v-if="birthdayToday.length > 0" class="tbl-wrap"><table class="tbl"><thead><tr><th>ID</th><th>Name</th><th>Department</th><th>Position</th><th>Birthday</th><th>Age</th></tr></thead><tbody><tr v-for="emp in birthdayToday" :key="emp.empid"><td class="td-mono">{{ emp.empno }}</td><td><strong>{{ emp.fullname }}</strong></td><td>{{ emp.deptdesc || '—' }}</td><td>{{ emp.position_desc || '—' }}</td><td><span class="bdg">{{ formatDate(emp.birthdate) }}</span></td><td>{{ emp.age }}</td></tr></tbody></table></div><div v-else class="empty-bday"><font-awesome-icon icon="cake-candles" /><strong>No birthdays today</strong><span>There are no employee birthdays for today.</span></div></div></div>
-        <div class="card-c data-card hr-panel hr-action-panel"><div class="card-c__h"><div class="card-title-icon"><font-awesome-icon icon="clock" /></div><div><span class="card-title">Retirement Watch</span><small>Employees approaching or at retirement age</small></div><span class="card-c__badge">{{ retirees.length }}</span></div><div class="card-c__b card-table-body"><div v-if="retirees.length > 0" class="tbl-wrap"><table class="tbl"><thead><tr><th>Name</th><th>Department</th><th>Age</th><th>Birthday</th><th>Status</th></tr></thead><tbody><tr v-for="emp in displayRetirees" :key="emp.empid"><td><strong>{{ emp.fullname }}</strong></td><td>{{ emp.deptdesc || '—' }}</td><td><span class="age-pill">{{ emp.age }}</span></td><td><span class="bdg">{{ formatMonthDay(emp.birthdate) }}</span></td><td><span v-if="emp.age > 64 && isDatePassed(emp.birthdate)" class="ret-bdg">RETIRED</span><span v-else class="ready-bdg">RETIREMENT WATCH</span></td></tr></tbody></table><div v-if="retirees.length > retireesLimit" class="exp-wrap"><button class="exp-btn" @click="retireesExpanded = !retireesExpanded"><font-awesome-icon :icon="retireesExpanded ? 'chevron-up' : 'chevron-down'" /> {{ retireesExpanded ? 'Show Less' : `Show All (${retirees.length})` }}</button></div></div><div v-else class="empty-bday"><font-awesome-icon icon="clock" /><strong>No employees in retirement watch</strong><span>There are currently no employees aged 60–65 in the active records.</span></div></div></div>
-      </section>
-
-      <div class="hr-section-heading"><div><span class="hr-section-number">05</span><div><h3>Upcoming Birthdays</h3><p>Next employees scheduled to celebrate a birthday</p></div></div><span class="hr-section-badge"><font-awesome-icon icon="calendar-days" /> NEXT 30 DAYS</span></div>
-      <section class="card-c card-c--f data-card hr-panel upcoming-panel"><div class="card-c__b card-table-body"><div v-if="upcomingBirthdays.length" class="upcoming-birthday-grid"><div v-for="emp in upcomingBirthdays" :key="`up-${emp.empid}`" class="upcoming-birthday-item"><div class="upcoming-date"><strong>{{ emp.daysUntil }}</strong><small>{{ emp.daysUntil === 1 ? 'DAY' : 'DAYS' }}</small></div><div class="upcoming-person"><strong>{{ emp.fullname }}</strong><span>{{ emp.deptdesc || 'Department not specified' }}</span></div><div class="upcoming-bday"><span>{{ formatMonthDay(emp.birthdate) }}</span><small>Age {{ emp.nextAge }}</small></div></div></div><div v-else class="empty-bday"><font-awesome-icon icon="calendar-days" /><strong>No upcoming birthdays</strong><span>No employee birthdays are scheduled within the next 30 days.</span></div></div></section>
     </div>
   </div>
 </template>
@@ -51,13 +35,15 @@ import axios from "axios";
 import * as echarts from "echarts";
 import Loading from "@/components/LoadingOverlay/Loadings";
 
-const palette = ["#0b5ed7", "#1677ff", "#2563eb", "#3b82f6", "#1d4ed8", "#60a5fa", "#075985", "#0284c7", "#38bdf8", "#1e40af", "#2563eb", "#93c5fd"];
+const palette = ["#6925e8", "#9b70f7", "#d9c9fa", "#f47746", "#ffb29a", "#44baa0", "#8292e7", "#c5afe8"];
 
 export default {
   components: { Loading },
   head() { return { meta: [{ hid: "description", name: "description", content: "HR Dashboard" }] }; },
-  data() { return { loading: true, employees: [], departments: [], birthdayToday: [], currentDate: "", retireesLimit: 10, retireesExpanded: false, charts: [] }; },
+  data() { return { loading: true, employees: [], departments: [], birthdayToday: [], currentDate: "", retireesLimit: 10, retireesExpanded: false, charts: [], search: "" }; },
   computed: {
+    filteredRetirees() { const q=this.search.trim().toLowerCase();return q?this.displayRetirees.filter(e=>[e.fullname,e.deptdesc,e.position_desc].some(v=>String(v||"").toLowerCase().includes(q))):this.displayRetirees; },
+    filteredBirthdays() {const q=this.search.trim().toLowerCase();return q?this.upcomingBirthdays.filter(e=>[e.fullname,e.deptdesc].some(v=>String(v||"").toLowerCase().includes(q))):this.upcomingBirthdays;},
     activeCount() { return this.employees.filter((e) => !e.isseparated && e.EmploymentStatus).length; },
     averageAge() { const ages = this.employees.map((e) => this.calcAge(e.birthdate)).filter((a) => a > 0 && a < 120); return ages.length ? Math.round((ages.reduce((a,b) => a+b, 0) / ages.length) * 10) / 10 : 0; },
     attentionCount() { return this.birthdayToday.length + this.retirees.length; },
@@ -74,6 +60,7 @@ export default {
   methods: {
     countBy(items,getter){return items.reduce((map,item)=>{const key=getter(item);map[key]=(map[key]||0)+1;return map;},{});},
     topKey(map,fallback){const keys=Object.keys(map);return keys.length?keys.sort((a,b)=>map[b]-map[a])[0]:fallback;},
+    goEmployees(){this.$router.push("/employees");},
     async fetchData(){this.loading=true;try{await Promise.all([this.fetchEmployees(),this.fetchDepartments()]);this.$nextTick(()=>{this.processBirthdays();this.buildCharts();});}catch(e){console.error("Dashboard fetch error:",e);}finally{this.loading=false;}},
     async fetchEmployees(){try{const res=await axios({method:"GET",url:`${this.$axios.defaults.baseURL}/employees/get-all`,params:{text:"",IsSeparated:0}});const payload=res.data;if(Array.isArray(payload))this.employees=payload;else if(payload&&Array.isArray(payload.data))this.employees=payload.data;else if(payload&&Array.isArray(payload.items))this.employees=payload.items;else this.employees=[];}catch(e){console.error("Error fetching employees:",e);this.employees=[];}},
     async fetchDepartments(){try{const res=await axios({method:"GET",url:`${this.$axios.defaults.baseURL}/file-maintenance/department/get-all`});this.departments=res.data||[];}catch(e){console.error("Error fetching departments:",e);this.departments=[];}},
