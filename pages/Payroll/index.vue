@@ -1,6 +1,5 @@
 <template>
   <div class="hr-inner-page">
-    <header class="hr-inner-heading"><h1>Payroll</h1><p>View payroll records, filter by office and export reports.</p></header>
     <main class="hr-inner-content">
       <PayrollTable />
     </main>
