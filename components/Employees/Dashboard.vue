@@ -88,7 +88,9 @@
           <div class="hr-insight-tile-body">
             <span class="hr-insight-tile-label">Employment</span>
             <div class="hr-insight-tile-value">{{ dominantEmployment }}</div>
-            <small class="hr-insight-tile-sub">{{ dominantEmploymentCount }}</small>
+            <small class="hr-insight-tile-sub">{{
+              dominantEmploymentCount
+            }}</small>
           </div>
         </div>
         <div class="hr-insight-tile tile--pink">
@@ -238,9 +240,7 @@
             </div>
             <div class="spotlight-stats">
               <div class="spotlight-stat">
-                <span class="spotlight-stat-num">{{
-                  mostTenured.years
-                }}</span
+                <span class="spotlight-stat-num">{{ mostTenured.years }}</span
                 ><span class="spotlight-stat-lbl">Years</span>
               </div>
               <div class="spotlight-stat">
@@ -308,14 +308,14 @@ import * as echarts from "echarts";
 import Loading from "@/components/LoadingOverlay/Loadings";
 
 const palette = [
-  "#2563eb",
-  "#0d9488",
-  "#7c3aed",
-  "#db2777",
-  "#f59e0b",
-  "#0891b2",
-  "#64748b",
-  "#60a5fa",
+  "#6925e8",
+  "#b89afa",
+  "#f47746",
+  "#ffb29a",
+  "#44baa0",
+  "#8292e7",
+  "#c5afe8",
+  "#eadfff",
 ];
 
 export default {
@@ -506,11 +506,13 @@ export default {
       const keys = Object.keys(map);
       return keys.length ? keys.sort((a, b) => map[b] - map[a])[0] : fallback;
     },
+    goEmployees() {
+      this.$router.push("/employees");
+    },
     async fetchData() {
       this.loading = true;
       try {
         await Promise.all([this.fetchEmployees(), this.fetchDepartments()]);
-        this.fetchMostTenured();
         this.$nextTick(() => {
           this.processBirthdays();
           this.buildCharts();
@@ -551,136 +553,6 @@ export default {
         console.error("Error fetching departments:", e);
         this.departments = [];
       }
-    },
-    async fetchMostTenured() {
-      // Lock so only one hydration runs at a time.
-      if (this._tenureHydrating || !this.employees.length) return;
-      this._tenureHydrating = true;
-      this.tenureLoading = true;
-      const cacheKey = "hrms_tenure_cache_v1";
-      let cache = {};
-      try {
-        cache = JSON.parse(localStorage.getItem(cacheKey) || "{}");
-      } catch (e) {}
-      try {
-        const pool = this.employees.filter(
-          (e) => e.empid != null && !e.datehired && !cache[e.empid]
-        );
-        if (pool.length) {
-          this.tenureHydrating = true;
-          const CONCURRENCY = 8;
-          let done = 0;
-          const queue = [...pool];
-          const workers = Array.from(
-            { length: Math.min(CONCURRENCY, queue.length) },
-            async () => {
-              while (queue.length) {
-                const emp = queue.shift();
-                try {
-                  const res = await axios({
-                    method: "GET",
-                    url: `${this.$axios.defaults.baseURL}/employees/get-one`,
-                    params: { empid: emp.empid },
-                  });
-                  const row = res.data && res.data[0];
-                  if (row && row.datehired) {
-                    cache[emp.empid] = row.datehired;
-                    this.$set(emp, "datehired", row.datehired);
-                  } else {
-                    cache[emp.empid] = null;
-                  }
-                } catch (err) {
-                  cache[emp.empid] = null;
-                }
-                done++;
-                if (done % 20 === 0 || done === pool.length) {
-                  this.tenureHydrated = done;
-                }
-              }
-            }
-          );
-          await Promise.all(workers);
-          this.tenureHydrating = false;
-          try {
-            localStorage.setItem(cacheKey, JSON.stringify(cache));
-          } catch (e) {}
-        }
-        this.applyTenureCache(cache);
-        this.computeTenureDist();
-      } catch (e) {
-        console.error("Error computing tenures:", e);
-      } finally {
-        this._tenureHydrating = false;
-        this.tenureLoading = false;
-      }
-    },
-    applyTenureCache(cache) {
-      if (!cache || !this.employees.length) return;
-      this.employees.forEach((e) => {
-        if (!e.datehired && cache[e.empid]) {
-          this.$set(e, "datehired", cache[e.empid]);
-        }
-      });
-    },
-    computeTenureDist() {
-      const rows = this.employees.filter((e) => e.datehired);
-      if (!rows.length) return;
-      const dist = [
-        { key: "20plus", label: "20+ Years", min: 20, max: 99 },
-        { key: "15_19", label: "15–19 Years", min: 15, max: 19 },
-        { key: "10_14", label: "10–14 Years", min: 10, max: 14 },
-        { key: "5_9", label: "5–9 Years", min: 5, max: 9 },
-        { key: "under5", label: "Under 5 Years", min: 0, max: 4.99 },
-      ].map((b) => {
-        const yearsVal = (e) => {
-          const y = this.tenureYearsNum(e.datehired);
-          return y;
-        };
-        const items = rows.filter((e) => {
-          const y = yearsVal(e);
-          return y >= b.min && y < b.max;
-        });
-        return { ...b, count: items.length };
-      });
-      const grand = dist.reduce((a, b) => a + b.count, 0) || 1;
-      dist.forEach((b) => (b.percent = Math.round((b.count / grand) * 100)));
-      this.tenureDist = dist;
-      const sorted = [...rows].sort(
-        (a, b) => new Date(a.datehired) - new Date(b.datehired)
-      );
-      const top = sorted[0];
-      if (top) {
-        this.mostTenured = {
-          ...top,
-          years: this.formatTenure(top.datehired),
-          initials: this.getInitials(top.fullname),
-        };
-      }
-    },
-    formatTenure(value) {
-      if (!value) return "—";
-      const hire = new Date(value);
-      if (Number.isNaN(hire.getTime())) return "—";
-      const now = new Date();
-      let totalMonths =
-        (now.getFullYear() - hire.getFullYear()) * 12 +
-        (now.getMonth() - hire.getMonth());
-      if (now.getDate() < hire.getDate()) totalMonths -= 1;
-      if (totalMonths < 0) totalMonths = 0;
-      const y = Math.floor(totalMonths / 12);
-      const m = totalMonths % 12;
-      if (y === 0) return `${m} month${m !== 1 ? "s" : ""}`;
-      if (m === 0) return `${y} year${y !== 1 ? "s" : ""}`;
-      return `${y} years, ${m} month${m !== 1 ? "s" : ""}`;
-    },
-    getInitials(name) {
-      if (!name) return "—";
-      return name
-        .split(/[,\s]+/)
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((n) => n[0].toUpperCase())
-        .join("");
     },
     processBirthdays() {
       const now = new Date();
@@ -738,15 +610,15 @@ export default {
       return {
         animationDuration: 650,
         animationEasing: "cubicOut",
-        textStyle: { fontFamily: "Tahoma, 'Segoe UI', sans-serif" },
+        textStyle: { fontFamily: "Segoe UI, Arial, sans-serif" },
         tooltip: {
           backgroundColor: "#fff",
-          borderColor: "#e2e8f0",
+          borderColor: "#e9e3f3",
           borderWidth: 1,
-          padding: [8, 12],
-          textStyle: { color: "#334155", fontSize: 12 },
+          padding: [10, 14],
+          textStyle: { color: "#362c48", fontSize: 12 },
           extraCssText:
-            "box-shadow:0 4px 16px rgba(15,23,42,.08);border-radius:8px;",
+            "box-shadow:0 10px 30px rgba(15,64,120,.12);border-radius:10px;",
         },
       };
     },
@@ -794,10 +666,10 @@ export default {
             `<div style="font-weight:700;margin-bottom:4px">${p.name}</div><div>${p.value} employees &nbsp; <b>${p.percent}%</b></div>`,
         },
         legend: {
-          bottom: 4,
+          bottom: 8,
           left: "center",
           width: "90%",
-          textStyle: { fontSize: 11, color: "#64748b", fontWeight: 600 },
+          textStyle: { fontSize: 11, color: "#817891", fontWeight: 600 },
           icon: "circle",
           itemWidth: 8,
           itemHeight: 8,
@@ -806,25 +678,30 @@ export default {
         series: [
           {
             type: "pie",
-            radius: ["52%", "72%"],
-            center: ["50%", "44%"],
-            itemStyle: { borderRadius: 4, borderColor: "#fff", borderWidth: 3 },
+            radius: ["55%", "76%"],
+            center: ["50%", "45%"],
+            itemStyle: { borderRadius: 8, borderColor: "#fff", borderWidth: 4 },
             label: {
               show: true,
               formatter: "{d}%",
               fontSize: 11,
-              fontWeight: 700,
-              color: "#475569",
+              fontWeight: 800,
+              color: "#483e60",
             },
             labelLine: {
               length: 8,
               length2: 6,
-              lineStyle: { color: "#cbd5e1" },
+              lineStyle: { color: "#93b4d8" },
             },
             emphasis: {
               scale: true,
-              scaleSize: 4,
-              label: { show: true, fontSize: 13, fontWeight: 700, color: "#2563eb" },
+              scaleSize: 5,
+              label: {
+                show: true,
+                fontSize: 14,
+                fontWeight: 800,
+                color: "#6925e8",
+              },
             },
             data: keys.map((k, i) => ({
               name: k,
@@ -837,7 +714,7 @@ export default {
           {
             type: "group",
             left: "center",
-            top: "40%",
+            top: "41%",
             children: [
               {
                 type: "text",
@@ -845,19 +722,19 @@ export default {
                 top: -10,
                 style: {
                   text: `${total}`,
-                  fill: "#0f172a",
-                  fontSize: 28,
-                  fontWeight: 700,
+                  fill: "#282037",
+                  fontSize: 30,
+                  fontWeight: 800,
                   textAlign: "center",
                 },
               },
               {
                 type: "text",
                 left: "center",
-                top: 22,
+                top: 25,
                 style: {
                   text: "EMPLOYEES",
-                  fill: "#94a3b8",
+                  fill: "#a098b3",
                   fontSize: 9,
                   fontWeight: 700,
                   textAlign: "center",
@@ -886,9 +763,9 @@ export default {
             `<div style="font-weight:700;margin-bottom:4px">${p.name}</div><div>${p.value} employees &nbsp; <b>${p.percent}%</b></div>`,
         },
         legend: {
-          bottom: 4,
+          bottom: 8,
           left: "center",
-          textStyle: { fontSize: 11, color: "#64748b", fontWeight: 600 },
+          textStyle: { fontSize: 11, color: "#55708f", fontWeight: 600 },
           icon: "circle",
           itemWidth: 8,
           itemHeight: 8,
@@ -897,32 +774,38 @@ export default {
         series: [
           {
             type: "pie",
-            radius: ["52%", "72%"],
-            center: ["50%", "44%"],
-            itemStyle: { borderRadius: 4, borderColor: "#fff", borderWidth: 3 },
+            radius: ["55%", "76%"],
+            center: ["50%", "45%"],
+            itemStyle: { borderRadius: 8, borderColor: "#fff", borderWidth: 4 },
             label: {
               show: true,
-              formatter: "{b} {d}%",
+              formatter: "{b}\n{d}%",
               fontSize: 11,
-              fontWeight: 700,
-              color: "#475569",
+              fontWeight: 800,
+              color: "#234a78",
+              lineHeight: 16,
             },
             labelLine: {
               length: 8,
               length2: 6,
-              lineStyle: { color: "#cbd5e1" },
+              lineStyle: { color: "#93b4d8" },
             },
             emphasis: {
               scale: true,
-              scaleSize: 4,
-              label: { show: true, fontSize: 13, fontWeight: 700, color: "#2563eb" },
+              scaleSize: 5,
+              label: {
+                show: true,
+                fontSize: 13,
+                fontWeight: 800,
+                color: "#0b5ed7",
+              },
             },
             data: keys.map((k, i) => ({
               name: k,
               value: map[k],
               itemStyle: {
                 color:
-                  ["#2563eb", "#db2777", "#0d9488"][i] ||
+                  ["#6925e8", "#bda3ff", "#efe8ff"][i] ||
                   palette[i % palette.length],
               },
             })),
@@ -932,7 +815,7 @@ export default {
           {
             type: "group",
             left: "center",
-            top: "40%",
+            top: "41%",
             children: [
               {
                 type: "text",
@@ -940,19 +823,19 @@ export default {
                 top: -10,
                 style: {
                   text: `${total}`,
-                  fill: "#0f172a",
-                  fontSize: 28,
-                  fontWeight: 700,
+                  fill: "#123b6d",
+                  fontSize: 30,
+                  fontWeight: 800,
                   textAlign: "center",
                 },
               },
               {
                 type: "text",
                 left: "center",
-                top: 22,
+                top: 25,
                 style: {
                   text: "EMPLOYEES",
-                  fill: "#94a3b8",
+                  fill: "#7a94b0",
                   fontSize: 9,
                   fontWeight: 700,
                   textAlign: "center",
@@ -977,8 +860,8 @@ export default {
             ]
           : Object.keys(empMap),
         sorted = allDepts.sort((a, b) => (empMap[b] || 0) - (empMap[a] || 0)),
-        labels = sorted,
-        vals = sorted.map((d) => empMap[d] || 0),
+        labels = sorted.slice(0, 12),
+        vals = labels.map((d) => empMap[d] || 0),
         chart = this.initChart("deptChart");
       if (!chart) return;
       chart.setOption({
@@ -995,27 +878,27 @@ export default {
         grid: {
           left: "2%",
           right: "4%",
-          top: "6%",
-          bottom: labels.length > 8 ? "22%" : "14%",
+          top: "5%",
+          bottom: "18%",
           containLabel: true,
         },
         xAxis: {
           type: "category",
           data: labels,
           axisLabel: {
-            color: "#64748b",
+            color: "#8e879a",
             fontSize: 10,
             interval: 0,
-            rotate: labels.length > 8 ? 30 : 0,
+            rotate: labels.length > 8 ? 28 : 0,
           },
-          axisLine: { lineStyle: { color: "#e2e8f0" } },
+          axisLine: { lineStyle: { color: "#ebe5f2" } },
           axisTick: { show: false },
         },
         yAxis: {
           type: "value",
           minInterval: 1,
-          axisLabel: { color: "#94a3b8", fontSize: 10 },
-          splitLine: { lineStyle: { color: "#f1f5f9" } },
+          axisLabel: { color: "#97909e", fontSize: 10 },
+          splitLine: { lineStyle: { color: "#f1edf7" } },
           axisLine: { show: false },
         },
         series: [
@@ -1025,16 +908,16 @@ export default {
               value: v,
               itemStyle: {
                 color: palette[i % palette.length],
-                borderRadius: [5, 5, 0, 0],
+                borderRadius: [7, 7, 0, 0],
               },
             })),
-            barMaxWidth: 36,
+            barMaxWidth: 42,
             showBackground: true,
-            backgroundStyle: { color: "#f8fafc", borderRadius: [5, 5, 0, 0] },
+            backgroundStyle: { color: "#f6f2fb", borderRadius: [7, 7, 0, 0] },
             label: {
               show: true,
               position: "top",
-              color: "#475569",
+              color: "#756989",
               fontSize: 10,
               fontWeight: 700,
             },
