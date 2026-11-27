@@ -140,3 +140,27 @@ body{background:#f5f0f4!important;color:#1c1c28}
 .hr-ref-main .dropdown-item.active,.hr-ref-main .dropdown-item:active{background:#6925e8;color:white}
 .hr-ref-main .table-responsive{max-width:100%;overflow-x:auto!important}
 @media(max-width:740px){.hr-ref-sidebar{position:static;min-height:0;padding:14px 16px}.hr-ref-sidebar>.hr-ref-logout{display:flex;position:absolute;right:16px;top:12px;width:auto;min-height:34px}.hr-ref-sidebar>.hr-ref-logout span{display:none}.hr-ref-main .hr-inner-page{padding:22px 15px}.hr-ref-main .main-employee-card>.card-body,.hr-ref-main .main-payroll-card>.card-body{padding:12px!important}.hr-ref-main .main-payroll-card>.modern-filter-bar{padding:12px!important}}
+
+/* Continuous full-width workspace */
+.hr-ref-layout{padding:0!important;background:#f6f7fb!important}
+.hr-ref-app-shell{max-width:none!important;min-height:100vh!important;margin:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important;grid-template-columns:210px minmax(0,1fr)}
+.hr-ref-sidebar{min-height:100vh;max-height:100vh;overflow-y:auto;position:sticky;top:0;border-right:1px solid #ececf3;padding:24px 14px}
+.hr-ref-main{min-height:100vh;background:#f6f7fb!important}
+.hr-ref-dashboard{background:transparent!important}
+.hr-ref-dashboard .db-wrap,.hr-ref-main .hr-inner-page{max-width:none!important;padding:24px!important;background:transparent!important}
+.hr-ref-header,.hr-inner-heading{margin-bottom:20px!important}
+.hr-ref-header h1,.hr-inner-heading h1{font-size:25px;line-height:1.25}
+.hr-ref-kpis,.hr-ref-chart-grid,.hr-ref-bottom-grid,.hr-ref-insights{gap:14px!important;margin-bottom:14px!important}
+.hr-ref-dashboard .hr-ref-card,.hr-ref-main .main-employee-card,.hr-ref-main .main-payroll-card{border-radius:14px!important;box-shadow:none!important;border:1px solid #eeedf4!important}
+.hr-ref-dashboard .hr-ref-kpis .hr-ref-kpi{min-height:108px!important;padding:16px 18px!important}
+.hr-ref-dashboard .hr-ref-chart-grid .hr-ref-chart{height:265px!important;min-height:265px!important;padding:16px!important}
+.hr-ref-dashboard .hr-ref-chart-grid .hr-ref-chart-area{height:200px!important;min-height:200px!important}
+.hr-ref-dashboard .hr-ref-bottom-grid .hr-ref-panel{padding:16px!important}
+.hr-ref-main .hr-inner-content .row{margin-left:0;margin-right:0}
+.hr-ref-main .employee-page>.row>.col-12,.hr-ref-main .payroll-page>.row>.col-12{padding:0}
+.hr-ref-main .modern-filter-bar,.hr-ref-main .seamless-toolbar{margin-bottom:12px!important}
+.hr-ref-main .main-employee-card>.card-body,.hr-ref-main .main-payroll-card>.card-body{padding:16px!important;overflow-x:visible}
+.hr-ref-main .main-payroll-card>.card-body{overflow-x:auto}
+.hr-ref-main .hr-inner-content .table-responsive{overflow-x:auto!important}
+@media(max-width:1050px){.hr-ref-app-shell{grid-template-columns:180px minmax(0,1fr)}}
+@media(max-width:740px){.hr-ref-app-shell{display:block}.hr-ref-sidebar{position:relative;min-height:0;max-height:none;overflow:visible;padding:12px 16px;border-right:0;border-bottom:1px solid #ececf3}.hr-ref-brand{padding-bottom:12px}.hr-ref-main{min-height:0}.hr-ref-dashboard .db-wrap,.hr-ref-main .hr-inner-page{padding:16px!important}.hr-ref-kpis,.hr-ref-chart-grid,.hr-ref-bottom-grid,.hr-ref-insights{gap:10px!important}.hr-ref-main .main-employee-card>.card-body,.hr-ref-main .main-payroll-card>.card-body{padding:12px!important}}
