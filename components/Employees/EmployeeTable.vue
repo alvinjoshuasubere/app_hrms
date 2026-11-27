@@ -271,30 +271,18 @@
               <b-table
                 head-variant="light"
                 style="font-size: 12px"
-                class="my-3"
+                class="hr-clean-table"
                 show-empty
-                stacked="md"
                 :current-page="currentPage"
                 :per-page="perPage"
                 :busy.sync="showLoading"
                 :items="filteredEmployees"
                 @row-clicked="viewEmployee"
                 :fields="fields"
-                :sticky-header="'400px'"
                 empty-text="No employees found"
               >
-                <template v-slot:cell(image)="row">
-                  <div class="employee-photo-cell">
-                    <img
-                      :src="
-                        formatSignatureSrc(
-                          row.item.photo64 || row.item.photo_url
-                        ) || '/user.jpg'
-                      "
-                      :alt="row.item.fullname"
-                      class="employee-thumbnail"
-                    />
-                  </div>
+                <template v-slot:cell(fullname)="row">
+                  <div class="hr-person"><img :src="formatSignatureSrc(row.item.photo64 || row.item.photo_url) || '/user.jpg'" :alt="''" class="hr-person-avatar"/><div><strong>{{row.item.fullname}}</strong><small>{{row.item.empno}}</small></div></div>
                 </template>
                 <template v-slot:cell(division_desc)="row">
                   <span>
@@ -306,54 +294,14 @@
                     }}
                   </span>
                 </template>
-                <template v-slot:cell(isseparated)="row">
-                  <div
-                    :class="[
-                      'status-circle mr-2',
-                      !row.item.isseparated ? 'active' : 'separated',
-                    ]"
-                  ></div>
-                  {{
-                    row.item.isseparated
-                      ? "Separated"
-                      : row.item.issuspended
-                      ? "Suspended"
-                      : "Active"
-                  }}
-                </template>
+                <template v-slot:cell(isseparated)="row"><span class="hr-status" :class="row.item.isseparated ? 'separated' : row.item.issuspended ? 'suspended' : 'active'"><i></i>{{row.item.isseparated ? 'Separated' : row.item.issuspended ? 'Suspended' : 'Active'}}</span></template>
                 <template v-slot:cell(actions)="row">
-                  <div class="action-btn-group">
-                    <b-button
-                      size="sm"
-                      variant=""
-                      class="tableButton"
-                      @click="generateQRCode(row.item)"
-                      v-b-tooltip.noninteractive.hover
-                      title="Generate QR Code"
-                    >
-                      <font-awesome-icon icon="qrcode" />
-                    </b-button>
-                    <b-button
-                      size="sm"
-                      variant="primary"
-                      class="tableButton"
-                      @click="openNationalIDModal(row.item)"
-                      v-b-tooltip.noninteractive.hover
-                      title="Generate ID Card"
-                    >
-                      <font-awesome-icon icon="id-card" />
-                    </b-button>
-                    <b-button
-                      size="sm"
-                      variant="success"
-                      class="tableButton"
-                      @click="openSignatureModal(row.item)"
-                      v-b-tooltip.noninteractive.hover
-                      title="Upload Signature"
-                    >
-                      <font-awesome-icon icon="signature" />
-                    </b-button>
-                  </div>
+                  <b-dropdown variant="link" size="sm" no-caret right boundary="viewport" class="hr-row-menu" @click.native.stop>
+                    <template #button-content><font-awesome-icon icon="ellipsis-v"/><span class="sr-only">Employee actions</span></template>
+                    <b-dropdown-item-button @click="generateQRCode(row.item)">Generate QR Code</b-dropdown-item-button>
+                    <b-dropdown-item-button @click="openNationalIDModal(row.item)">Generate ID Card</b-dropdown-item-button>
+                    <b-dropdown-item-button @click="openSignatureModal(row.item)">Upload Signature</b-dropdown-item-button>
+                  </b-dropdown>
                 </template>
 
                 <!-- QR select column: individual checkbox -->
@@ -371,17 +319,16 @@
 
                 <!-- QR select column: header with select-all checkbox -->
                 <template v-slot:head(qr_select)>
-                  <span style="font-size: 11px">QR</span>
+                  <b-form-checkbox :checked="isAllQRSelected" :indeterminate="isPartiallyQRSelected" @change="toggleQRSelectAll" aria-label="Select all filtered employees"/>
                 </template>
                 <template v-slot:table-caption>
                   <b-row align-h="end">
-                    <b-col cols="6">{{ bottomLabel }}</b-col>
+                    <b-col cols="6" class="d-flex align-items-center flex-wrap"><span>{{ bottomLabel }}</span><b-form-select v-model="perPage" :options="[10,20,50,100]" class="hr-page-size ml-2" aria-label="Rows per page"/></b-col>
                     <b-col cols="6">
                       <b-pagination
                         v-model="currentPage"
                         :total-rows="filteredTotalRows"
                         :per-page="perPage"
-                        pills
                         align="right"
                         size="sm"
                       ></b-pagination>
@@ -2026,19 +1973,6 @@ export default {
           thStyle: { width: "40px" },
         },
         {
-          key: "image",
-          label: "Photo",
-          sortable: false,
-          thStyle: { width: "50px" },
-          tdClass: "align-middle",
-        },
-        {
-          key: "empno",
-          label: "Employee No.",
-          sortable: true,
-          thStyle: { width: "110px" },
-        },
-        {
           key: "swipe_id",
           label: "Swipe ID",
           sortable: true,
@@ -2046,7 +1980,7 @@ export default {
         },
         {
           key: "fullname",
-          label: "Full Name",
+          label: "Employee Name",
           sortable: true,
           class: "text-left",
           thStyle: { width: "180px" },
