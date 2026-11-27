@@ -4,7 +4,7 @@
     <div class="ref-workspace">
       <header class="ref-heading"><h1>Dashboard</h1><label class="ref-search"><font-awesome-icon icon="magnifying-glass"/><input v-model="search" placeholder="Search birthday or retirement records" aria-label="Search birthday or retirement records"/></label></header>
       <section class="ref-kpis">
-        <article v-for="item in [{label:'Total employees',value:employees.length},{label:'Departments',value:departments.length},{label:'Birthdays today',value:birthdayToday.length},{label:'Upcoming retirement',value:upcomingRetirement.length}]" :key="item.label" class="ref-card ref-kpi"><span>{{item.label}}</span><strong>{{item.value}}</strong></article>
+        <article v-for="item in kpiItems" :key="item.key" class="ref-card ref-kpi"><span>{{item.label}}</span><div class="ref-kpi-value"><strong>{{item.value}}</strong><span class="ref-trend" :class="trendClass(item.key)" :title="comparisonDate ? 'Compared with '+comparisonDate : 'No previous daily snapshot'"><span v-if="trend(item.key) !== null">{{trend(item.key)>0?'↗ +':trend(item.key)<0?'↘ ':'→ '}}{{trend(item.key).toFixed(1)}}%</span><span v-else>—</span></span></div><small class="ref-trend-caption">{{comparisonDate ? 'vs '+comparisonDate : 'No prior comparison'}}</small></article>
       </section>
       <section class="ref-middle">
         <article class="ref-card"><h2>Employment status</h2><div class="ref-chart" ref="statusChart"></div></article>
@@ -15,7 +15,7 @@
         <article class="ref-card"><h2>Age distribution</h2><div class="ref-chart" ref="ageChart"></div></article>
         <article class="ref-card"><h2>Birthdays Today <span class="ref-count">{{birthdayToday.length}}</span></h2><div class="ref-list"><table v-if="filteredToday.length"><thead><tr><th>Full name</th><th>Department</th><th>Age</th></tr></thead><tbody><tr v-for="e in filteredToday" :key="e.empid"><td><span class="ref-avatar">{{(e.fullname||'?').charAt(0)}}</span>{{e.fullname}}</td><td>{{e.deptdesc}}</td><td>{{e.age}}</td></tr></tbody></table><p v-else class="ref-empty">{{search ? 'No matching records' : 'No birthdays today'}}</p></div></article>
         <article class="ref-card"><h2>Gender distribution</h2><div class="ref-chart" ref="genderChart"></div></article>
-        <article class="ref-card"><h2>Upcoming Retirement <span class="ref-count">{{upcomingRetirement.length}}</span></h2><div class="ref-list"><table v-if="filteredRetirement.length"><thead><tr><th>Full name</th><th>Department</th><th>Age 65 date</th></tr></thead><tbody><tr v-for="e in filteredRetirement" :key="e.empid"><td><span class="ref-avatar">{{(e.fullname||'?').charAt(0)}}</span>{{e.fullname}}</td><td>{{e.deptdesc}}</td><td>{{formatDate(e.retirementDate)}}</td></tr></tbody></table><p v-else class="ref-empty">{{search ? 'No matching records' : 'No upcoming retirement records'}}</p></div></article>
+        <article class="ref-card"><h2>Upcoming Retirement <span class="ref-count">{{upcomingRetirement.length}}</span></h2><div class="ref-list"><table v-if="filteredRetirement.length"><thead><tr><th>Full name</th><th>Department</th><th>Age</th><th>Age 65 date</th></tr></thead><tbody><tr v-for="e in filteredRetirement" :key="e.empid"><td><span class="ref-avatar">{{(e.fullname||'?').charAt(0)}}</span>{{e.fullname}}</td><td>{{e.deptdesc}}</td><td><span class="ref-age">{{e.age}}</span></td><td>{{formatDate(e.retirementDate)}}</td></tr></tbody></table><p v-else class="ref-empty">{{search ? 'No matching records' : 'No upcoming retirement records'}}</p></div></article>
         <article class="ref-card"><h2>Employees by employment type</h2><div class="ref-chart" ref="typeChart"></div></article>
         <article class="ref-card"><h2>Birthdays by month</h2><div class="ref-chart" ref="birthdayChart"></div></article>
       </section>
@@ -51,6 +51,9 @@ export default {
     return {
       loading: true,
       search: "",
+      previousSnapshot: null,
+      comparisonDate: "",
+      fetchFailed: false,
       employees: [],
       departments: [],
       birthdayToday: [],
@@ -67,6 +70,9 @@ export default {
     };
   },
   computed: {
+    kpiItems() {
+      return [{key:"employees",label:"Total employees",value:this.employees.length},{key:"departments",label:"Departments",value:this.departments.length},{key:"birthdays",label:"Birthdays today",value:this.birthdayToday.length},{key:"retirement",label:"Upcoming retirement",value:this.upcomingRetirement.length}];
+    },
     upcomingRetirement() {
       const now = new Date();
       return this.retirees.map(e => {
@@ -228,6 +234,32 @@ export default {
     this.charts = [];
   },
   methods: {
+    trend(key) {
+      if (!this.previousSnapshot || this.fetchFailed) return null;
+      const previous=this.previousSnapshot.values[key];
+      const current=this.kpiItems.find(i=>i.key===key).value;
+      if (!Number.isFinite(previous) || previous===0) return previous===0 && current===0 ? 0 : null;
+      return (current-previous)/previous*100;
+    },
+    trendClass(key) {
+      const n=this.trend(key);
+      return n===null || n===0 ? "neutral" : n>0 ? "higher" : "lower";
+    },
+    saveDailySnapshot() {
+      if (this.fetchFailed) return;
+      try {
+        const now=new Date();
+        const date=[now.getFullYear(),String(now.getMonth()+1).padStart(2,"0"),String(now.getDate()).padStart(2,"0")].join("-");
+        const key="hrms-dashboard-daily-v1";
+        const stored=JSON.parse(localStorage.getItem(key)||"{}");
+        const prior=Object.keys(stored).filter(d=>d<date).sort().pop();
+        this.previousSnapshot=prior ? {values:stored[prior]} : null;
+        this.comparisonDate=prior || "";
+        stored[date]=this.kpiItems.reduce((o,i)=>{o[i.key]=i.value;return o;},{});
+        Object.keys(stored).sort().slice(0,-31).forEach(d=>delete stored[d]);
+        localStorage.setItem(key,JSON.stringify(stored));
+      } catch(e) { this.previousSnapshot=null; this.comparisonDate=""; }
+    },
     filterPeople(rows) {
       const q=this.search.trim().toLowerCase();
       return rows.filter(e=>[e.fullname,e.deptdesc,e.empno].some(v=>String(v||"").toLowerCase().includes(q)));
@@ -248,10 +280,12 @@ export default {
     },
     async fetchData() {
       this.loading = true;
+      this.fetchFailed = false;
       try {
         await Promise.all([this.fetchEmployees(), this.fetchDepartments()]);
         this.$nextTick(() => {
           this.processBirthdays();
+          this.saveDailySnapshot();
           this.buildCharts();
         });
       } catch (e) {
@@ -275,6 +309,7 @@ export default {
           this.employees = payload.items;
         else this.employees = [];
       } catch (e) {
+        this.fetchFailed = true;
         console.error("Error fetching employees:", e);
         this.employees = [];
       }
@@ -287,6 +322,7 @@ export default {
         });
         this.departments = res.data || [];
       } catch (e) {
+        this.fetchFailed = true;
         console.error("Error fetching departments:", e);
         this.departments = [];
       }
@@ -718,4 +754,9 @@ export default {
 .ref-empty{padding:40px 0;text-align:center;color:#858596;font-size:13px}
 @media(max-width:1100px){.ref-middle{grid-template-columns:repeat(2,minmax(0,1fr))}.ref-middle>article:nth-child(2){grid-column:span 1}.ref-summary{grid-column:1/-1}}
 @media(max-width:650px){.ref-workspace{padding:14px}.ref-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ref-middle,.ref-pairs{grid-template-columns:1fr}.ref-heading{flex-wrap:wrap}.ref-search{width:100%}.ref-card{padding:16px}.ref-chart{height:250px}}
+.ref-kpi-value{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.ref-kpi .ref-trend{font-size:12px;font-weight:700;white-space:nowrap}
+.ref-trend.higher{color:#00a889}.ref-trend.lower{color:#e34b55}.ref-trend.neutral{color:#9693a5}
+.ref-trend-caption{font-size:10px;color:#9693a5}
+.ref-age{display:inline-block;padding:3px 8px;background:#f0eaff;color:#6925e8;border-radius:8px;font-weight:700}
 </style>
