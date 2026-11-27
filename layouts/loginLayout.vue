@@ -1,23 +1,6 @@
 <template>
-  <div class="body overflow-hidden">
-    <nuxt />
-  </div>
+  <div class="hr-login-shell"><nuxt /></div>
 </template>
-
-<script>
-export default {
-  created(){
-    if(localStorage.length !== 0){
-      this.$router.push("");
-    }
-  }
-
-
-};
-</script>
-
-<style>
-
-
-
+<style scoped>
+.hr-login-shell{width:100%;min-height:100vh;background:#fff}
 </style>
