@@ -171,3 +171,38 @@ body{background:#f5f0f4!important;color:#1c1c28}
 .hr-ref-main .btn-primary,.hr-ref-main .page-item.active .page-link{background:#d6ff3d!important;color:#243451!important;border-color:#c2df39!important}.hr-ref-main .btn-primary:hover{background:#c2df39!important}.hr-ref-main .btn-outline-primary{color:#34539b!important;border-color:#c2df39!important}.hr-ref-main .table thead th{background:#edf1fb!important;color:#243451!important}
 
 .hr-ref-main .btn-primary,.hr-ref-main .page-item.active .page-link{background:#34539b!important;color:#fffafa!important;border-color:#34539b!important}.hr-ref-main .btn-primary:hover{background:#29447f!important}.hr-ref-main .table thead th{background:#edf1fb!important;color:#243451!important}.hr-ref-main .btn-outline-primary{color:#34539b!important;border-color:#34539b!important}
+
+/* Compact directory tables */
+.hr-ref-main .main-employee-card,.hr-ref-main .main-payroll-card{background:#fff!important;border-radius:10px!important;border:1px solid #e1e6f0!important}
+.hr-ref-main .main-employee-card>.card-body,.hr-ref-main .main-payroll-card>.card-body{padding:12px!important}
+.hr-ref-main .modern-filter-bar{align-items:center;justify-content:space-between;gap:8px!important;padding:4px 0!important;margin-bottom:10px!important}
+.hr-ref-main .main-payroll-card>.modern-filter-bar{padding:12px 12px 0!important}
+.hr-ref-main .modern-filter-bar .search-section{flex:1 1 230px;max-width:340px;min-width:180px}
+.hr-ref-main .modern-filter-bar .filter-controls{gap:6px;align-items:center}
+.hr-ref-main .modern-filter-bar .form-control,.hr-ref-main .modern-filter-bar .custom-select,.hr-ref-main .modern-filter-bar .btn{font-size:12px!important;min-height:32px;height:auto;border-radius:6px!important}
+.hr-ref-main .seamless-toolbar{padding:6px 0!important;margin:0 0 8px!important;border-bottom:1px solid #e1e6f0!important;align-items:center}
+.hr-ref-main .hr-clean-table{margin:0!important;width:100%;font-size:12px!important;border-collapse:separate;border-spacing:0;color:#243451!important}
+.hr-ref-main .hr-clean-table thead th{background:#f3f5fa!important;color:#52627c!important;font-size:11px!important;font-weight:600!important;border:0!important;padding:9px 10px!important;white-space:nowrap}
+.hr-ref-main .hr-clean-table thead th:first-child{border-radius:6px 0 0 6px}
+.hr-ref-main .hr-clean-table thead th:last-child{border-radius:0 6px 6px 0}
+.hr-ref-main .hr-clean-table tbody td{background:#fff!important;border:0!important;border-bottom:1px solid #edf0f5!important;padding:9px 10px!important;vertical-align:middle!important;font-size:12px!important}
+.hr-ref-main .hr-clean-table tbody tr:hover td{background:#f6f8fc!important}
+.hr-ref-main .hr-clean-table tbody tr:last-child td{border-bottom:0!important}
+.hr-ref-main .hr-person{display:flex;align-items:center;gap:9px;min-width:150px;text-align:left}
+.hr-ref-main .hr-person strong{font-size:12px;font-weight:600;display:block;color:#243451}
+.hr-ref-main .hr-person small{display:block;font-size:10px;color:#64748b;margin-top:2px}
+.hr-ref-main .hr-person-avatar,.hr-ref-main .hr-person-initial{width:30px;height:30px;flex:0 0 30px;border-radius:50%;object-fit:cover;background:#edf1fb}
+.hr-ref-main .hr-person-initial{display:grid;place-items:center;color:#34539b;font-weight:700}
+.hr-ref-main .hr-status{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-size:11px}
+.hr-ref-main .hr-status i{width:7px;height:7px;border-radius:50%;background:#8792a4}
+.hr-ref-main .hr-status.active i{background:#16a36a}.hr-ref-main .hr-status.suspended i{background:#d99b22}.hr-ref-main .hr-status.separated i{background:#8792a4}
+.hr-ref-main .hr-row-menu .btn{color:#52627c!important;background:transparent!important;box-shadow:none!important;padding:4px 10px!important}
+.hr-ref-main .hr-row-menu .dropdown-item{font-size:12px}
+.hr-ref-main .hr-clean-table caption{caption-side:bottom;padding:14px 0 2px;font-size:11px;color:#64748b}
+.hr-ref-main .hr-clean-table .pagination{gap:3px;margin:0}
+.hr-ref-main .hr-clean-table .page-link{border:0!important;border-radius:5px!important;background:transparent;color:#52627c;padding:5px 9px}
+.hr-ref-main .hr-clean-table .page-item.active .page-link{background:#34539b!important;color:#fff!important}
+.hr-ref-main .hr-page-size,.hr-ref-main .per-page-select{width:auto!important;max-width:95px;font-size:11px!important;height:30px!important}
+.hr-ref-main .hr-clean-table .custom-control-input:checked~.custom-control-label::before{background:#34539b;border-color:#34539b}
+.hr-ref-main .main-payroll-card>.card-body{overflow-x:auto!important}
+@media(max-width:740px){.hr-ref-main .hr-clean-table{min-width:720px}.hr-ref-main .main-employee-card .table-responsive{overflow-x:auto!important}.hr-ref-main .modern-filter-bar .search-section{max-width:none;flex-basis:100%}}
