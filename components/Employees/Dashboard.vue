@@ -1,20 +1,23 @@
 <template>
-  <div class="dashboard hr-dashboard hr-chart-workspace">
-    <Loading v-if="loading" />
-    <div class="analytics-wrap">
-      <header class="analytics-heading"><div><h1>Dashboard</h1><p>Workforce analytics</p></div><span>{{ currentDate }}</span></header>
-      <section class="analytics-kpis">
-        <article v-for="item in [{label:'Employees',value:employees.length,icon:'users'},{label:'Departments',value:departments.length,icon:'building'},{label:'Average age',value:averageAge,icon:'user-clock'},{label:'Retirement watch',value:retirees.length,icon:'hourglass-half'}]" :key="item.label" class="analytics-card analytics-kpi">
-          <div><span>{{ item.label }}</span><strong>{{ item.value }}</strong></div><div class="analytics-icon"><font-awesome-icon :icon="item.icon"/></div>
-        </article>
+  <div class="dashboard hr-dashboard hr-reference-final">
+    <Loading v-if="loading"/>
+    <div class="ref-workspace">
+      <header class="ref-heading"><h1>Dashboard</h1><label class="ref-search"><font-awesome-icon icon="magnifying-glass"/><input v-model="search" placeholder="Search birthday or retirement records" aria-label="Search birthday or retirement records"/></label></header>
+      <section class="ref-kpis">
+        <article v-for="item in [{label:'Total employees',value:employees.length},{label:'Departments',value:departments.length},{label:'Birthdays today',value:birthdayToday.length},{label:'Upcoming retirement',value:upcomingRetirement.length}]" :key="item.label" class="ref-card ref-kpi"><span>{{item.label}}</span><strong>{{item.value}}</strong></article>
       </section>
-      <section class="analytics-grid">
-        <article class="analytics-card analytics-wide"><h2>Employees per department</h2><div class="analytics-chart" ref="deptChart"></div></article>
-        <article class="analytics-card"><h2>Employment status</h2><div class="analytics-chart" ref="statusChart"></div></article>
-        <article class="analytics-card"><h2>Gender distribution</h2><div class="analytics-chart" ref="genderChart"></div></article>
-        <article class="analytics-card"><h2>Age distribution</h2><div class="analytics-chart" ref="ageChart"></div></article>
-        <article class="analytics-card"><h2>Employees by employment type</h2><div class="analytics-chart" ref="typeChart"></div></article>
-        <article class="analytics-card analytics-wide"><h2>Birthdays by month</h2><div class="analytics-chart" ref="birthdayChart"></div></article>
+      <section class="ref-middle">
+        <article class="ref-card"><h2>Employment status</h2><div class="ref-chart" ref="statusChart"></div></article>
+        <article class="ref-card"><h2>Employees per department</h2><div class="ref-chart" ref="deptChart"></div></article>
+        <article class="ref-card ref-summary"><h2>Workforce overview</h2><div v-for="item in [{label:'Average age',value:averageAge,icon:'user-clock'},{label:'Departments',value:departments.length,icon:'building'},{label:'Birthdays today',value:birthdayToday.length,icon:'cake-candles'},{label:'Upcoming retirement',value:upcomingRetirement.length,icon:'hourglass-half'}]" :key="item.label" class="ref-summary-row"><font-awesome-icon :icon="item.icon"/><span>{{item.label}}</span><strong>{{item.value}}</strong></div></article>
+      </section>
+      <section class="ref-pairs">
+        <article class="ref-card"><h2>Age distribution</h2><div class="ref-chart" ref="ageChart"></div></article>
+        <article class="ref-card"><h2>Birthdays Today <span class="ref-count">{{birthdayToday.length}}</span></h2><div class="ref-list"><table v-if="filteredToday.length"><thead><tr><th>Full name</th><th>Department</th><th>Age</th></tr></thead><tbody><tr v-for="e in filteredToday" :key="e.empid"><td><span class="ref-avatar">{{(e.fullname||'?').charAt(0)}}</span>{{e.fullname}}</td><td>{{e.deptdesc}}</td><td>{{e.age}}</td></tr></tbody></table><p v-else class="ref-empty">{{search ? 'No matching records' : 'No birthdays today'}}</p></div></article>
+        <article class="ref-card"><h2>Gender distribution</h2><div class="ref-chart" ref="genderChart"></div></article>
+        <article class="ref-card"><h2>Upcoming Retirement <span class="ref-count">{{upcomingRetirement.length}}</span></h2><div class="ref-list"><table v-if="filteredRetirement.length"><thead><tr><th>Full name</th><th>Department</th><th>Age 65 date</th></tr></thead><tbody><tr v-for="e in filteredRetirement" :key="e.empid"><td><span class="ref-avatar">{{(e.fullname||'?').charAt(0)}}</span>{{e.fullname}}</td><td>{{e.deptdesc}}</td><td>{{formatDate(e.retirementDate)}}</td></tr></tbody></table><p v-else class="ref-empty">{{search ? 'No matching records' : 'No upcoming retirement records'}}</p></div></article>
+        <article class="ref-card"><h2>Employees by employment type</h2><div class="ref-chart" ref="typeChart"></div></article>
+        <article class="ref-card"><h2>Birthdays by month</h2><div class="ref-chart" ref="birthdayChart"></div></article>
       </section>
     </div>
   </div>
@@ -47,6 +50,7 @@ export default {
   data() {
     return {
       loading: true,
+      search: "",
       employees: [],
       departments: [],
       birthdayToday: [],
@@ -63,6 +67,16 @@ export default {
     };
   },
   computed: {
+    upcomingRetirement() {
+      const now = new Date();
+      return this.retirees.map(e => {
+        const b = new Date(e.birthdate);
+        const date = new Date(b.getFullYear()+65,b.getMonth(),b.getDate());
+        return {...e, retirementDate:date};
+      }).filter(e=>e.retirementDate >= new Date(now.getFullYear(),now.getMonth(),now.getDate())).sort((a,b)=>a.retirementDate-b.retirementDate);
+    },
+    filteredToday() { return this.filterPeople(this.birthdayToday); },
+    filteredRetirement() { return this.filterPeople(this.upcomingRetirement); },
     activeCount() {
       return this.employees.filter((e) => !e.isseparated && e.EmploymentStatus)
         .length;
@@ -214,6 +228,10 @@ export default {
     this.charts = [];
   },
   methods: {
+    filterPeople(rows) {
+      const q=this.search.trim().toLowerCase();
+      return rows.filter(e=>[e.fullname,e.deptdesc,e.empno].some(v=>String(v||"").toLowerCase().includes(q)));
+    },
     countBy(items, getter) {
       return items.reduce((map, item) => {
         const key = getter(item);
@@ -601,7 +619,7 @@ export default {
             ]
           : Object.keys(empMap),
         sorted = allDepts.sort((a, b) => (empMap[b] || 0) - (empMap[a] || 0)),
-        labels = sorted.slice(0, 12),
+        labels = sorted.filter(Boolean),
         vals = labels.map((d) => empMap[d] || 0),
         chart = this.initChart("deptChart");
       if (!chart) return;
@@ -623,6 +641,7 @@ export default {
           bottom: "18%",
           containLabel: true,
         },
+        dataZoom: labels.length > 8 ? [{type:"inside",startValue:0,endValue:7},{type:"slider",height:12,bottom:2,startValue:0,endValue:7}] : [],
         xAxis: {
           type: "category",
           data: labels,
@@ -648,8 +667,8 @@ export default {
             data: vals.map((v, i) => ({
               value: v,
               itemStyle: {
-                color: palette[i % palette.length],
-                borderRadius: [7, 7, 0, 0],
+                color: i % 2 ? "#ffb29a" : "#f47746",
+                barBorderRadius: [5, 5, 0, 0],
               },
             })),
             barMaxWidth: 42,
@@ -670,23 +689,33 @@ export default {
 };
 </script>
 <style scoped>
-.hr-chart-workspace{position:static!important;inset:auto!important;transform:none!important;width:100%!important;max-width:none!important;height:auto!important;max-height:none!important;overflow:visible!important;background:#f6f7fb!important}
-.analytics-wrap{width:100%;box-sizing:border-box;padding:24px}
-.analytics-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;color:#77788a;font-size:12px}
-.analytics-heading h1{font-size:26px;font-weight:750;color:#242433;margin:0}
-.analytics-heading p{margin:4px 0 0}
-.analytics-kpis,.analytics-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:16px}
-.analytics-card{min-width:0;background:#fff;border:1px solid #eeedf4;border-radius:14px;padding:18px}
-.analytics-kpi{display:flex;justify-content:space-between;align-items:center}
-.analytics-kpi span{display:block;color:#77788a;font-size:12px}
-.analytics-kpi strong{display:block;font-size:29px;color:#242433;margin-top:8px}
-.analytics-icon{display:grid;place-items:center;width:42px;height:42px;background:#f0eaff;color:#6925e8;border-radius:12px}
-.analytics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.analytics-wide{grid-column:1/-1}
-.analytics-card h2{font-size:15px;color:#343442;font-weight:700;margin:0 0 12px}
-.analytics-chart{height:280px;width:100%}
-.analytics-wide .analytics-chart{height:320px}
-@media(min-width:1500px){.analytics-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.analytics-wide{grid-column:span 4}}
-@media(max-width:900px){.analytics-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:650px){.analytics-wrap{padding:14px}.analytics-grid{grid-template-columns:1fr}.analytics-wide{grid-column:auto}.analytics-card{padding:12px}.analytics-chart{height:260px}.analytics-heading{gap:12px}}
+.hr-reference-final{position:static!important;inset:auto!important;transform:none!important;width:100%!important;max-width:none!important;height:auto!important;max-height:none!important;overflow:visible!important;background:#f6f7fb!important}
+.ref-workspace{width:100%;padding:24px;box-sizing:border-box;color:#20202b;font-family:font_R,"Segoe UI",sans-serif}
+.ref-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+.ref-heading h1{font-size:24px;font-weight:750;margin:0}
+.ref-search{display:flex;align-items:center;gap:10px;background:#fff;border-radius:24px;padding:9px 16px;width: min(45%,460px);color:#9693a5;margin:0}
+.ref-search input{border:0;outline:0;width:100%;font:inherit;font-size:12px;background:transparent}
+.ref-kpis,.ref-middle,.ref-pairs{display:grid;gap:18px;margin-bottom:18px}
+.ref-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+.ref-middle{grid-template-columns:minmax(0,1fr) minmax(0,2.15fr) minmax(0,1fr)}
+.ref-pairs{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ref-card{background:white;border-radius:20px;padding:20px;min-width:0}
+.ref-kpi{padding:20px 24px;display:flex;flex-direction:column;gap:8px}
+.ref-kpi span{font-size:13px;font-weight:600}
+.ref-kpi strong{font-size:30px;line-height:1.15}
+.ref-card h2{font-size:16px;font-weight:750;margin:0 0 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ref-chart{height:240px;width:100%}
+.ref-summary-row{display:flex;align-items:center;gap:10px;padding:15px 0;border-bottom:1px solid #f3f3f7;font-size:12px}
+.ref-summary-row:last-child{border:0}
+.ref-summary-row svg{color:#9898a8}
+.ref-summary-row strong{margin-left:auto;font-size:14px}
+.ref-count{font-size:12px;color:#6925e8;background:#f0eaff;padding:4px 9px;border-radius:12px}
+.ref-list{max-height:240px;overflow:auto}
+.ref-list table{width:100%;border-collapse:collapse;font-size:12px;text-align:left}
+.ref-list th{color:#858596;font-weight:500;padding:10px 6px}
+.ref-list td{padding:10px 6px;border-top:1px solid #f3f3f7}
+.ref-avatar{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#f0eaff;color:#6925e8;margin-right:8px;font-weight:700}
+.ref-empty{padding:40px 0;text-align:center;color:#858596;font-size:13px}
+@media(max-width:1100px){.ref-middle{grid-template-columns:repeat(2,minmax(0,1fr))}.ref-middle>article:nth-child(2){grid-column:span 1}.ref-summary{grid-column:1/-1}}
+@media(max-width:650px){.ref-workspace{padding:14px}.ref-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ref-middle,.ref-pairs{grid-template-columns:1fr}.ref-heading{flex-wrap:wrap}.ref-search{width:100%}.ref-card{padding:16px}.ref-chart{height:250px}}
 </style>
