@@ -32,15 +32,15 @@ export default {
 .hr-topbar .hr-ref-brand{padding:0!important;flex-shrink:0}
 .hr-top-links{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
 .hr-topbar .hr-ref-nav-link{width:auto;white-space:nowrap;min-height:40px}
-.hr-topbar .hr-ref-nav-link.nuxt-link-active{background:#e5ebe3;color:#004643!important}
+.hr-topbar .hr-ref-nav-link.nuxt-link-active{background:#eff6ff;color:#1d4ed8!important}
 .hr-top-logout{margin-left:auto;flex-shrink:0}
 .hr-top-layout .hr-ref-main{width:100%!important;min-height:calc(100vh - 66px)!important}
 @media(max-width:740px){.hr-topbar{flex-wrap:wrap;gap:8px;padding:10px 16px}.hr-top-links{order:3;flex:0 0 100%;overflow-x:auto}.hr-topbar .hr-ref-nav-link{padding:0 10px}.hr-top-logout{margin-left:auto}}
-.hr-topbar{background:#004643;border-bottom-color:#004643}
-.hr-topbar .hr-ref-brand,.hr-topbar .hr-ref-brand strong,.hr-topbar .hr-ref-brand small{color:#c5d8cc!important}
-.hr-topbar .hr-ref-nav-link{color:#faf8f3!important;background:transparent;border:0}
-.hr-topbar .hr-ref-nav-link svg{color:#c5d8cc}
-.hr-topbar .hr-ref-nav-link:hover,.hr-topbar .hr-ref-nav-link.nuxt-link-active{background:#c5d8cc!important;color:#004643!important}
-.hr-topbar .hr-ref-nav-link:hover svg,.hr-topbar .hr-ref-nav-link.nuxt-link-active svg{color:#004643!important}
-.hr-topbar{background:#004643;border-bottom-color:#004643}.hr-topbar .hr-ref-brand,.hr-topbar .hr-ref-brand strong,.hr-topbar .hr-ref-brand small{color:#faf8f3!important}.hr-topbar .hr-ref-nav-link svg{color:#faf8f3}.hr-topbar .hr-ref-nav-link.nuxt-link-active,.hr-topbar .hr-ref-nav-link:hover{background:#c5d8cc!important;color:#004643!important}
+.hr-topbar{background:#1d4ed8;border-bottom-color:#1d4ed8}
+.hr-topbar .hr-ref-brand,.hr-topbar .hr-ref-brand strong,.hr-topbar .hr-ref-brand small{color:#dbeafe!important}
+.hr-topbar .hr-ref-nav-link{color:#ffffff!important;background:transparent;border:0}
+.hr-topbar .hr-ref-nav-link svg{color:#dbeafe}
+.hr-topbar .hr-ref-nav-link:hover,.hr-topbar .hr-ref-nav-link.nuxt-link-active{background:#dbeafe!important;color:#1d4ed8!important}
+.hr-topbar .hr-ref-nav-link:hover svg,.hr-topbar .hr-ref-nav-link.nuxt-link-active svg{color:#1d4ed8!important}
+.hr-topbar{background:#1d4ed8;border-bottom-color:#1d4ed8}.hr-topbar .hr-ref-brand,.hr-topbar .hr-ref-brand strong,.hr-topbar .hr-ref-brand small{color:#ffffff!important}.hr-topbar .hr-ref-nav-link svg{color:#ffffff}.hr-topbar .hr-ref-nav-link.nuxt-link-active,.hr-topbar .hr-ref-nav-link:hover{background:#dbeafe!important;color:#1d4ed8!important}
 </style>
