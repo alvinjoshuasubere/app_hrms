@@ -1,9 +1,9 @@
 <template>
-  <div class="dashboard hr-dashboard">
+  <div class="dashboard hr-dashboard hr-wide-dashboard">
     <Loading v-if="loading" />
     <div class="db-wrap">
       <section class="db-top hr-hero hr-hero-minimal">
-        <h2 class="db-title">HR Dashboard</h2>
+        <div><h2 class="db-title">Dashboard</h2><p class="wide-subtitle">Workforce overview and human resource analytics</p></div>
         <div class="db-date">
           <font-awesome-icon icon="calendar-alt" /> {{ currentDate }}
         </div>
@@ -46,7 +46,7 @@
       <div class="hr-section-head">
         <h3>Analytics</h3>
       </div>
-      <section class="hr-analytics-grid">
+      <section class="hr-analytics-grid wide-analytics">
         <div class="card-c chart-card dept-card hr-panel hr-department-panel">
           <div class="card-c__h">
             <span class="card-title">Employees per Department</span>
@@ -928,3 +928,32 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.hr-wide-dashboard{position:static!important;inset:auto!important;transform:none!important;width:100%!important;max-width:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;background:#f6f7fb!important}
+.hr-wide-dashboard .db-wrap{display:block!important;width:100%!important;max-width:none!important;height:auto!important;max-height:none!important;margin:0!important;padding:24px!important;overflow:visible!important}
+.hr-wide-dashboard .db-top{display:flex!important;justify-content:space-between;align-items:center;background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 24px!important;height:auto!important}
+.hr-wide-dashboard .db-title{font-size:28px!important;color:#242433!important;margin:0!important}
+.wide-subtitle{font-size:13px;color:#77788a;margin:5px 0 0}
+.hr-wide-dashboard .hr-section-head{margin:20px 0 12px!important;padding:0!important}
+.hr-wide-dashboard .hr-section-head h3{font-size:15px!important;color:#343442!important}
+.hr-wide-dashboard .hr-kpi-grid,.hr-wide-dashboard .hr-insight-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:16px!important;width:100%!important}
+.hr-wide-dashboard .wide-analytics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important;width:100%!important}
+.hr-wide-dashboard .wide-analytics .hr-department-panel{grid-column:1/-1!important;grid-row:auto!important;height:360px!important}
+.hr-wide-dashboard .wide-analytics .chart-card{height:300px!important;min-height:0!important;display:flex!important;flex-direction:column!important}
+.hr-wide-dashboard .wide-analytics .card-c__b{flex:1!important;height:auto!important;min-height:0!important;max-height:none!important;width:100%!important}
+.hr-wide-dashboard .hr-action-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important}
+.hr-wide-dashboard .hr-kpi,.hr-wide-dashboard .hr-panel,.hr-wide-dashboard .hr-insight-tile{min-width:0!important;background:white!important;border:1px solid #eeedf4!important;border-radius:14px!important;box-shadow:none!important;margin:0!important}
+.hr-wide-dashboard .hr-kpi{height:auto!important;min-height:110px!important;padding:18px!important}
+.hr-wide-dashboard .hr-kpi .stat-icon{background:#f0eaff!important;color:#6925e8!important}
+.hr-wide-dashboard .stat-num{color:#242433!important;font-size:28px!important}
+.hr-wide-dashboard .card-c__h{padding:16px!important;background:white!important;border-bottom:1px solid #f1eff5!important}
+.hr-wide-dashboard .card-title{color:#343442!important;font-size:15px!important}
+.hr-wide-dashboard .hr-action-panel,.hr-wide-dashboard .upcoming-panel,.hr-wide-dashboard .spotlight-panel{height:auto!important;max-height:none!important;min-height:0!important}
+.hr-wide-dashboard .card-table-body{height:auto!important;max-height:360px!important;overflow:auto!important}
+.hr-wide-dashboard .tbl-wrap{max-width:100%;overflow:auto!important}
+.hr-wide-dashboard .upcoming-birthday-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important}
+@media(max-width:1100px){.hr-wide-dashboard .hr-kpi-grid,.hr-wide-dashboard .hr-insight-grid,.hr-wide-dashboard .upcoming-birthday-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.hr-wide-dashboard .hr-action-grid{grid-template-columns:1fr!important}}
+@media(max-width:740px){.hr-wide-dashboard .db-wrap{padding:16px!important}.hr-wide-dashboard .wide-analytics{grid-template-columns:1fr!important}.hr-wide-dashboard .db-top{align-items:flex-start;flex-wrap:wrap;gap:10px}.hr-wide-dashboard .wide-analytics .hr-department-panel{height:320px!important}}
+@media(max-width:420px){.hr-wide-dashboard .hr-kpi-grid,.hr-wide-dashboard .hr-insight-grid,.hr-wide-dashboard .upcoming-birthday-grid{grid-template-columns:1fr!important}}
+</style>
