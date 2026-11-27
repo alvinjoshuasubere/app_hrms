@@ -549,9 +549,9 @@ export default {
     },
     buildExcelTable(rows) {
       const rowStyles = [
-        "background:#f3f4f6;color:#6b7280;", // 0: PROVIDE COLUMNS - gray
-        "background:#f3f4f6;color:#6b7280;", // 1: System Aliases - gray
-        "background:#f3f4f6;color:#6b7280;", // 2: DEFAULT COLUMNS - gray
+        "background:#f8fafc;color:#6b7280;", // 0: PROVIDE COLUMNS - gray
+        "background:#f8fafc;color:#6b7280;", // 1: System Aliases - gray
+        "background:#f8fafc;color:#6b7280;", // 2: DEFAULT COLUMNS - gray
         "background:#fee2e2;color:#dc2626;font-weight:bold;", // 3: CHECK (validation) - red
         "background:#d1fae5;font-weight:bold;color:#000;", // 4: TOTAL - green
         "background:#fee2e2;color:#dc2626;font-weight:bold;", // 5: CHECK (validation) - red
@@ -750,7 +750,7 @@ export default {
 }
 
 .payroll-filter-bar {
-  background-color: #007bff !important;
+  background-color: #1d4ed8 !important;
   z-index: 1000;
 }
 
@@ -786,7 +786,7 @@ export default {
 .per-page-select {
   height: 26px;
   border-radius: 4px;
-  border: 1px solid #dee2e6;
+  border: 1px solid #e2e8f0;
   font-size: 0.9rem;
   min-width: 55px;
   width: 60px;
@@ -794,7 +794,7 @@ export default {
 }
 
 .per-page-select:focus {
-  border-color: #80bdff;
+  border-color: #93c5fd;
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
@@ -835,14 +835,14 @@ export default {
 
 .icon-select {
   padding-left: 30px !important;
-  background: #f8f9fa;
-  border: 1px solid #ced4da;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   transition: all 0.2s ease;
 }
 
 .icon-select:focus {
   background: #fff;
-  border-color: #80bdff;
+  border-color: #93c5fd;
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
 }
 
@@ -862,13 +862,13 @@ export default {
 }
 
 .modern-search-group input {
-  border: 1px solid #eef0f2;
+  border: 1px solid #f1f5f9;
   height: 42px;
 }
 
 .modern-search-group .input-group-text {
   background: white;
-  border: 1px solid #eef0f2;
+  border: 1px solid #f1f5f9;
   border-right: none;
 }
 
@@ -882,7 +882,7 @@ export default {
 .modern-select-sm {
   height: 38px;
   border-radius: 8px;
-  border: 1px solid #eef0f2;
+  border: 1px solid #f1f5f9;
   padding-right: 2rem;
   font-size: 0.85rem;
   color: #495057;
