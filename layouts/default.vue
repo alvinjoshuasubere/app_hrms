@@ -18,7 +18,9 @@
 export default {
   methods: {
     logout() {
+      const dashboardHistory = localStorage.getItem("hrms-dashboard-daily-v1");
       localStorage.clear();
+      if (dashboardHistory !== null) localStorage.setItem("hrms-dashboard-daily-v1", dashboardHistory);
       this.$router.replace("/");
     }
   }
