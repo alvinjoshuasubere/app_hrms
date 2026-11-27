@@ -1,15 +1,11 @@
 <template>
-  <div class="body">
-    <main>
-      <LoginForm />
-    </main>
-  </div>
+  <LoginForm />
 </template>
 
 <script>
 import LoginForm from "@/components/Login/LoginForm";
 export default {
-  layout: "default",
+  layout: "loginLayout",
   components: {
     LoginForm,
   },
