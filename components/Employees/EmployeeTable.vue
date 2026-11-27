@@ -560,7 +560,7 @@
               <div class="emp-staff-meta-block">
                 <span class="emp-staff-meta-label">Phone number</span>
                 <span class="emp-staff-meta-value">{{
-                  employeeDetails.cellno || employeeDetails.cell_no || employeeDetails.cellno || "—"
+                  employeeDetails.cellno || employeeDetails.cell_no || "—"
                 }}</span>
               </div>
               <div class="emp-staff-meta-block">
@@ -622,12 +622,12 @@
           </div>
         </div>
 
-        <nav class="emp-staff-tabs" aria-label="Profile sections">
+        <nav class="emp-staff-tabs" aria-label="Profile sections" role="tablist">
           <button
             type="button"
             class="emp-staff-tab"
             :class="{ 'emp-staff-tab--active': employeeDetailTab === 0 }"
-            @click="employeeDetailTab = 0"
+            role="tab" :aria-selected="employeeDetailTab === 0" @click="employeeDetailTab = 0"
           >
             Personal Information
           </button>
@@ -635,7 +635,7 @@
             type="button"
             class="emp-staff-tab"
             :class="{ 'emp-staff-tab--active': employeeDetailTab === 1 }"
-            @click="employeeDetailTab = 1"
+            role="tab" :aria-selected="employeeDetailTab === 1" @click="employeeDetailTab = 1"
           >
             Employment Information
           </button>
@@ -643,7 +643,7 @@
             type="button"
             class="emp-staff-tab"
             :class="{ 'emp-staff-tab--active': employeeDetailTab === 2 }"
-            @click="employeeDetailTab = 2"
+            role="tab" :aria-selected="employeeDetailTab === 2" @click="employeeDetailTab = 2"
           >
             Contact &amp; IDs
           </button>
@@ -651,7 +651,7 @@
 
         <div class="emp-staff-panel-wrap">
           <!-- Tab: Staff profile -->
-          <div v-show="employeeDetailTab === 0" class="emp-staff-layout">
+          <div v-if="employeeDetailTab === 0" class="emp-staff-layout">
             <div class="emp-staff-col emp-staff-col--main">
               <div class="emp-staff-card">
                 <div class="emp-staff-card-head">
@@ -793,7 +793,7 @@
 
           <!-- Tab: Work information -->
           <div
-            v-show="employeeDetailTab === 1"
+            v-else-if="employeeDetailTab === 1"
             class="emp-staff-layout emp-staff-layout--stack"
           >
             <div class="emp-staff-card">
@@ -866,7 +866,7 @@
 
           <!-- Tab: Contact & IDs -->
           <div
-            v-show="employeeDetailTab === 2"
+            v-else-if="employeeDetailTab === 2"
             class="emp-staff-layout emp-staff-layout--split"
           >
             <div class="emp-staff-card">
@@ -5037,4 +5037,10 @@ img{
 .emp-staff-modal-root .signature-detail-wrapper{grid-column:1/-1}
 @media(max-width:800px){.emp-staff-modal-root .emp-profile-columns{grid-template-columns:1fr}.emp-staff-modal-root .emp-staff-meta-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:480px){.emp-staff-modal-root .emp-staff-meta-grid{grid-template-columns:1fr!important}.emp-staff-modal-root .emp-staff-kv,.emp-staff-modal-root .emp-staff-kv-full{grid-template-columns:1fr;gap:3px}}
+</style><style>
+.emp-staff-modal-root .emp-staff-tabs{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px!important;overflow:visible!important;background:#fffafa!important;border:1px solid #e1e6f0!important;border-radius:12px!important;padding:5px!important}
+.emp-staff-modal-root .emp-staff-tab{min-width:0;white-space:normal!important;line-height:1.35;text-align:center;padding:11px 6px!important;border-radius:8px!important;cursor:pointer}
+.emp-staff-modal-root .emp-staff-tab--active{background:#34539b!important;color:#fffafa!important;box-shadow:inset 0 -3px #d6ff3d!important}
+.emp-staff-modal-root .emp-staff-tab:not(.emp-staff-tab--active):hover{background:#edf1fb!important;color:#34539b!important}
+@media(max-width:480px){.emp-staff-modal-root .emp-staff-tab{font-size:11px!important;padding:9px 4px!important}}
 </style>
