@@ -1,307 +1,24 @@
 <template>
-  <div class="dashboard hr-dashboard hr-wide-dashboard">
+  <div class="dashboard hr-dashboard hr-chart-workspace">
     <Loading v-if="loading" />
-    <div class="db-wrap">
-      <section class="db-top hr-hero hr-hero-minimal">
-        <div><h2 class="db-title">Dashboard</h2><p class="wide-subtitle">Workforce overview and human resource analytics</p></div>
-        <div class="db-date">
-          <font-awesome-icon icon="calendar-alt" /> {{ currentDate }}
-        </div>
+    <div class="analytics-wrap">
+      <header class="analytics-heading"><div><h1>Dashboard</h1><p>Workforce analytics</p></div><span>{{ currentDate }}</span></header>
+      <section class="analytics-kpis">
+        <article v-for="item in [{label:'Employees',value:employees.length,icon:'users'},{label:'Departments',value:departments.length,icon:'building'},{label:'Average age',value:averageAge,icon:'user-clock'},{label:'Retirement watch',value:retirees.length,icon:'hourglass-half'}]" :key="item.label" class="analytics-card analytics-kpi">
+          <div><span>{{ item.label }}</span><strong>{{ item.value }}</strong></div><div class="analytics-icon"><font-awesome-icon :icon="item.icon"/></div>
+        </article>
       </section>
-
-      <div class="hr-section-head">
-        <h3>Overview</h3>
-      </div>
-      <section class="db-stats hr-kpi-grid">
-        <div class="stat stat--total hr-kpi">
-          <div class="stat-icon"><font-awesome-icon icon="users" /></div>
-          <div class="stat-info">
-            <span class="stat-lbl">Employees</span>
-            <span class="stat-num">{{ employees.length }}</span>
-          </div>
-        </div>
-        <div class="stat stat--active hr-kpi">
-          <div class="stat-icon"><font-awesome-icon icon="building" /></div>
-          <div class="stat-info">
-            <span class="stat-lbl">Departments</span>
-            <span class="stat-num">{{ departments.length }}</span>
-          </div>
-        </div>
-        <div class="stat stat--dept hr-kpi">
-          <div class="stat-icon"><font-awesome-icon icon="user-clock" /></div>
-          <div class="stat-info">
-            <span class="stat-lbl">Average Age</span>
-            <span class="stat-num">{{ averageAge }}</span>
-          </div>
-        </div>
-        <div class="stat stat--bday hr-kpi hr-kpi-alert">
-          <div class="stat-icon"><font-awesome-icon icon="bell" /></div>
-          <div class="stat-info">
-            <span class="stat-lbl">For Attention</span>
-            <span class="stat-num">{{ attentionCount }}</span>
-          </div>
-        </div>
-      </section>
-
-      <div class="hr-section-head">
-        <h3>Analytics</h3>
-      </div>
-      <section class="hr-analytics-grid wide-analytics">
-        <div class="card-c chart-card dept-card hr-panel hr-department-panel">
-          <div class="card-c__h">
-            <span class="card-title">Employees per Department</span>
-          </div>
-          <div class="card-c__b" ref="deptChart"></div>
-        </div>
-        <div class="card-c chart-card hr-panel">
-          <div class="card-c__h">
-            <span class="card-title">Employment Status</span>
-          </div>
-          <div class="card-c__b" ref="statusChart"></div>
-        </div>
-        <div class="card-c chart-card hr-panel">
-          <div class="card-c__h">
-            <span class="card-title">Gender Distribution</span>
-          </div>
-          <div class="card-c__b" ref="genderChart"></div>
-        </div>
-      </section>
-
-      <div class="hr-section-head">
-        <h3>Insights</h3>
-      </div>
-      <section class="hr-insight-grid">
-        <div class="hr-insight-tile tile--blue">
-          <div class="hr-insight-tile-icon">
-            <font-awesome-icon icon="user-group" />
-          </div>
-          <div class="hr-insight-tile-body">
-            <span class="hr-insight-tile-label">Gender</span>
-            <div class="hr-insight-tile-value">{{ dominantGender }}</div>
-            <small class="hr-insight-tile-sub">{{ dominantGenderCount }}</small>
-          </div>
-        </div>
-        <div class="hr-insight-tile tile--green">
-          <div class="hr-insight-tile-icon">
-            <font-awesome-icon icon="briefcase" />
-          </div>
-          <div class="hr-insight-tile-body">
-            <span class="hr-insight-tile-label">Employment</span>
-            <div class="hr-insight-tile-value">{{ dominantEmployment }}</div>
-            <small class="hr-insight-tile-sub">{{
-              dominantEmploymentCount
-            }}</small>
-          </div>
-        </div>
-        <div class="hr-insight-tile tile--pink">
-          <div class="hr-insight-tile-icon">
-            <font-awesome-icon icon="cake-candles" />
-          </div>
-          <div class="hr-insight-tile-body">
-            <span class="hr-insight-tile-label">Birthdays</span>
-            <div class="hr-insight-tile-value">{{ birthdayToday.length }}</div>
-          </div>
-        </div>
-        <div class="hr-insight-tile tile--orange">
-          <div class="hr-insight-tile-icon">
-            <font-awesome-icon icon="hourglass-half" />
-          </div>
-          <div class="hr-insight-tile-body">
-            <span class="hr-insight-tile-label">Retirement</span>
-            <div class="hr-insight-tile-value">{{ retirees.length }}</div>
-          </div>
-        </div>
-      </section>
-
-      <div class="hr-section-head">
-        <h3>Action Center</h3>
-      </div>
-      <section class="hr-action-grid">
-        <div class="card-c data-card hr-panel hr-action-panel">
-          <div class="card-c__h">
-            <span class="card-title">Birthdays Today</span>
-            <span class="card-c__badge">{{ birthdayToday.length }}</span>
-          </div>
-          <div class="card-c__b card-table-body">
-            <div v-if="birthdayToday.length > 0" class="tbl-wrap">
-              <table class="tbl">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Department</th>
-                    <th>Position</th>
-                    <th>Birthday</th>
-                    <th>Age</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="emp in birthdayToday" :key="emp.empid">
-                    <td class="td-mono">{{ emp.empno }}</td>
-                    <td>
-                      <strong>{{ emp.fullname }}</strong>
-                    </td>
-                    <td>{{ emp.deptdesc || "—" }}</td>
-                    <td>{{ emp.position_desc || "—" }}</td>
-                    <td>
-                      <span class="bdg">{{ formatDate(emp.birthdate) }}</span>
-                    </td>
-                    <td>{{ emp.age }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div v-else class="empty-bday">
-              <font-awesome-icon icon="cake-candles" />
-              <strong>No birthdays today</strong>
-            </div>
-          </div>
-        </div>
-        <div class="card-c data-card hr-panel hr-action-panel">
-          <div class="card-c__h">
-            <span class="card-title">Retirement Watch</span>
-            <span class="card-c__badge">{{ retirees.length }}</span>
-          </div>
-          <div class="card-c__b card-table-body">
-            <div v-if="retirees.length > 0" class="tbl-wrap">
-              <table class="tbl">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Department</th>
-                    <th>Age</th>
-                    <th>Birthday</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="emp in displayRetirees" :key="emp.empid">
-                    <td>
-                      <strong>{{ emp.fullname }}</strong>
-                    </td>
-                    <td>{{ emp.deptdesc || "—" }}</td>
-                    <td>
-                      <span class="age-pill">{{ emp.age }}</span>
-                    </td>
-                    <td>
-                      <span class="bdg">{{
-                        formatMonthDay(emp.birthdate)
-                      }}</span>
-                    </td>
-                    <td>
-                      <span
-                        v-if="emp.age > 64 && isDatePassed(emp.birthdate)"
-                        class="ret-bdg"
-                        >RETIRED</span
-                      ><span v-else class="ready-bdg">WATCH</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div v-if="retirees.length > retireesLimit" class="exp-wrap">
-                <button
-                  class="exp-btn"
-                  @click="retireesExpanded = !retireesExpanded"
-                >
-                  <font-awesome-icon
-                    :icon="retireesExpanded ? 'chevron-up' : 'chevron-down'"
-                  />
-                  {{
-                    retireesExpanded
-                      ? "Show Less"
-                      : `Show All (${retirees.length})`
-                  }}
-                </button>
-              </div>
-            </div>
-            <div v-else class="empty-bday">
-              <font-awesome-icon icon="clock" />
-              <strong>No retirement watch</strong>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div class="hr-section-head">
-        <h3>Spotlight</h3>
-      </div>
-      <section class="card-c hr-panel spotlight-panel">
-        <div class="card-c__b" v-if="mostTenured">
-          <div class="spotlight-card">
-            <div class="spotlight-avatar">
-              {{ mostTenured.initials }}
-            </div>
-            <div class="spotlight-info">
-              <strong class="spotlight-name">{{ mostTenured.fullname }}</strong>
-              <span class="spotlight-meta"
-                >{{ mostTenured.position_desc }} &middot;
-                {{ mostTenured.deptdesc }}</span
-              >
-            </div>
-            <div class="spotlight-stats">
-              <div class="spotlight-stat">
-                <span class="spotlight-stat-num">{{ mostTenured.years }}</span
-                ><span class="spotlight-stat-lbl">Years</span>
-              </div>
-              <div class="spotlight-stat">
-                <span class="spotlight-stat-num">{{
-                  formatDate(mostTenured.datehired)
-                }}</span
-                ><span class="spotlight-stat-lbl">Hired</span>
-              </div>
-              <div class="spotlight-stat">
-                <span class="spotlight-stat-num td-mono">{{
-                  mostTenured.empno
-                }}</span
-                ><span class="spotlight-stat-lbl">Employee No.</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div v-else class="empty-bday">
-          <font-awesome-icon icon="award" />
-          <strong>No employee record</strong>
-        </div>
-      </section>
-
-      <div class="hr-section-head">
-        <h3>Birthdays</h3>
-      </div>
-      <section class="card-c card-c--f data-card hr-panel upcoming-panel">
-        <div class="card-c__b card-table-body">
-          <div
-            v-if="upcomingBirthdays.length"
-            class="upcoming-birthday-grid upcoming-birthday-grid--four"
-          >
-            <div
-              v-for="emp in upcomingBirthdays"
-              :key="`up-${emp.empid}`"
-              class="upcoming-birthday-item"
-            >
-              <div class="upcoming-date">
-                <strong>{{ emp.daysUntil }}</strong
-                ><small>{{ emp.daysUntil === 1 ? "DAY" : "DAYS" }}</small>
-              </div>
-              <div class="upcoming-person">
-                <strong>{{ emp.fullname }}</strong>
-                <span>{{ emp.deptdesc || "—" }}</span>
-              </div>
-              <div class="upcoming-bday">
-                <span>{{ formatMonthDay(emp.birthdate) }}</span
-                ><small>Age {{ emp.nextAge }}</small>
-              </div>
-            </div>
-          </div>
-          <div v-else class="empty-bday">
-            <font-awesome-icon icon="calendar-days" />
-            <strong>No upcoming birthdays</strong>
-          </div>
-        </div>
+      <section class="analytics-grid">
+        <article class="analytics-card analytics-wide"><h2>Employees per department</h2><div class="analytics-chart" ref="deptChart"></div></article>
+        <article class="analytics-card"><h2>Employment status</h2><div class="analytics-chart" ref="statusChart"></div></article>
+        <article class="analytics-card"><h2>Gender distribution</h2><div class="analytics-chart" ref="genderChart"></div></article>
+        <article class="analytics-card"><h2>Age distribution</h2><div class="analytics-chart" ref="ageChart"></div></article>
+        <article class="analytics-card"><h2>Employees by employment type</h2><div class="analytics-chart" ref="typeChart"></div></article>
+        <article class="analytics-card analytics-wide"><h2>Birthdays by month</h2><div class="analytics-chart" ref="birthdayChart"></div></article>
       </section>
     </div>
   </div>
 </template>
-
 <script>
 import axios from "axios";
 import * as echarts from "echarts";
@@ -486,7 +203,9 @@ export default {
     } ${d.getDate()}, ${d.getFullYear()}`;
     this.fetchData();
   },
+  mounted() { window.addEventListener("resize", this.resizeCharts); },
   beforeDestroy() {
+    window.removeEventListener("resize", this.resizeCharts);
     this.charts.forEach((chart) => {
       try {
         chart.dispose();
@@ -638,6 +357,7 @@ export default {
       this.buildStatusChart();
       this.buildGenderChart();
       this.buildDeptChart();
+      this.buildAdditionalCharts();
       this.$nextTick(() => this.resizeCharts());
     },
     resizeCharts() {
@@ -646,6 +366,27 @@ export default {
           c.resize();
         } catch (e) {}
       });
+    },
+    buildAdditionalCharts() {
+      const ages = this.employees.map(e => this.calcAge(e.birthdate)).filter(a => a > 0 && a < 120);
+      const groups = ["Under 25","25–34","35–44","45–54","55–59","60+"];
+      const counts = [0,0,0,0,0,0];
+      ages.forEach(a => counts[a<25?0:a<35?1:a<45?2:a<55?3:a<60?4:5]++);
+      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      const birthdays = Array(12).fill(0);
+      this.employees.forEach(e => { if (!e.birthdate) return; const d = new Date(e.birthdate); if (!Number.isNaN(d.getTime())) birthdays[d.getMonth()]++; });
+      const map = this.countBy(this.employees, e => e.EmploymentStatus || "Unknown");
+      const types = Object.keys(map).sort((a,b)=>map[b]-map[a]);
+      const bar = (ref, labels, values, color, horizontal=false) => {
+        const chart=this.initChart(ref); if(!chart)return;
+        const category={type:"category",data:labels,axisTick:{show:false},axisLabel:{color:"#77788a",interval:0,overflow:"truncate",width:100},axisLine:{lineStyle:{color:"#eeedf4"}}};
+        const value={type:"value",minInterval:1,splitLine:{lineStyle:{color:"#eeedf4"}}};
+        chart.setOption({...this.chartBaseOption(),tooltip:{trigger:"axis",axisPointer:{type:"shadow"}},grid:{left:12,right:24,top:20,bottom:12,containLabel:true},xAxis:horizontal?value:category,yAxis:horizontal?{...category,inverse:true}:value,series:[{type:"bar",data:values,barMaxWidth:36,itemStyle:{color,borderRadius:horizontal?[0,5,5,0]:[5,5,0,0]}}]});
+      };
+      bar("ageChart",groups,counts,"#6925e8");
+      bar("typeChart",types,types.map(k=>map[k]),"#44baa0",true);
+      const chart=this.initChart("birthdayChart");
+      if(chart)chart.setOption({...this.chartBaseOption(),tooltip:{trigger:"axis"},grid:{left:12,right:20,top:20,bottom:12,containLabel:true},xAxis:{type:"category",data:months,axisLabel:{color:"#77788a"}},yAxis:{type:"value",minInterval:1,splitLine:{lineStyle:{color:"#eeedf4"}}},series:[{type:"line",data:birthdays,smooth:true,symbolSize:6,lineStyle:{color:"#6925e8",width:3},itemStyle:{color:"#6925e8"},areaStyle:{color:"#e9ddff"}}]});
     },
     buildStatusChart() {
       const map = this.countBy(
@@ -928,32 +669,24 @@ export default {
   },
 };
 </script>
-
 <style scoped>
-.hr-wide-dashboard{position:static!important;inset:auto!important;transform:none!important;width:100%!important;max-width:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;background:#f6f7fb!important}
-.hr-wide-dashboard .db-wrap{display:block!important;width:100%!important;max-width:none!important;height:auto!important;max-height:none!important;margin:0!important;padding:24px!important;overflow:visible!important}
-.hr-wide-dashboard .db-top{display:flex!important;justify-content:space-between;align-items:center;background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 24px!important;height:auto!important}
-.hr-wide-dashboard .db-title{font-size:28px!important;color:#242433!important;margin:0!important}
-.wide-subtitle{font-size:13px;color:#77788a;margin:5px 0 0}
-.hr-wide-dashboard .hr-section-head{margin:20px 0 12px!important;padding:0!important}
-.hr-wide-dashboard .hr-section-head h3{font-size:15px!important;color:#343442!important}
-.hr-wide-dashboard .hr-kpi-grid,.hr-wide-dashboard .hr-insight-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:16px!important;width:100%!important}
-.hr-wide-dashboard .wide-analytics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important;width:100%!important}
-.hr-wide-dashboard .wide-analytics .hr-department-panel{grid-column:1/-1!important;grid-row:auto!important;height:360px!important}
-.hr-wide-dashboard .wide-analytics .chart-card{height:300px!important;min-height:0!important;display:flex!important;flex-direction:column!important}
-.hr-wide-dashboard .wide-analytics .card-c__b{flex:1!important;height:auto!important;min-height:0!important;max-height:none!important;width:100%!important}
-.hr-wide-dashboard .hr-action-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important}
-.hr-wide-dashboard .hr-kpi,.hr-wide-dashboard .hr-panel,.hr-wide-dashboard .hr-insight-tile{min-width:0!important;background:white!important;border:1px solid #eeedf4!important;border-radius:14px!important;box-shadow:none!important;margin:0!important}
-.hr-wide-dashboard .hr-kpi{height:auto!important;min-height:110px!important;padding:18px!important}
-.hr-wide-dashboard .hr-kpi .stat-icon{background:#f0eaff!important;color:#6925e8!important}
-.hr-wide-dashboard .stat-num{color:#242433!important;font-size:28px!important}
-.hr-wide-dashboard .card-c__h{padding:16px!important;background:white!important;border-bottom:1px solid #f1eff5!important}
-.hr-wide-dashboard .card-title{color:#343442!important;font-size:15px!important}
-.hr-wide-dashboard .hr-action-panel,.hr-wide-dashboard .upcoming-panel,.hr-wide-dashboard .spotlight-panel{height:auto!important;max-height:none!important;min-height:0!important}
-.hr-wide-dashboard .card-table-body{height:auto!important;max-height:360px!important;overflow:auto!important}
-.hr-wide-dashboard .tbl-wrap{max-width:100%;overflow:auto!important}
-.hr-wide-dashboard .upcoming-birthday-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important}
-@media(max-width:1100px){.hr-wide-dashboard .hr-kpi-grid,.hr-wide-dashboard .hr-insight-grid,.hr-wide-dashboard .upcoming-birthday-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.hr-wide-dashboard .hr-action-grid{grid-template-columns:1fr!important}}
-@media(max-width:740px){.hr-wide-dashboard .db-wrap{padding:16px!important}.hr-wide-dashboard .wide-analytics{grid-template-columns:1fr!important}.hr-wide-dashboard .db-top{align-items:flex-start;flex-wrap:wrap;gap:10px}.hr-wide-dashboard .wide-analytics .hr-department-panel{height:320px!important}}
-@media(max-width:420px){.hr-wide-dashboard .hr-kpi-grid,.hr-wide-dashboard .hr-insight-grid,.hr-wide-dashboard .upcoming-birthday-grid{grid-template-columns:1fr!important}}
+.hr-chart-workspace{position:static!important;inset:auto!important;transform:none!important;width:100%!important;max-width:none!important;height:auto!important;max-height:none!important;overflow:visible!important;background:#f6f7fb!important}
+.analytics-wrap{width:100%;box-sizing:border-box;padding:24px}
+.analytics-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;color:#77788a;font-size:12px}
+.analytics-heading h1{font-size:26px;font-weight:750;color:#242433;margin:0}
+.analytics-heading p{margin:4px 0 0}
+.analytics-kpis,.analytics-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:16px}
+.analytics-card{min-width:0;background:#fff;border:1px solid #eeedf4;border-radius:14px;padding:18px}
+.analytics-kpi{display:flex;justify-content:space-between;align-items:center}
+.analytics-kpi span{display:block;color:#77788a;font-size:12px}
+.analytics-kpi strong{display:block;font-size:29px;color:#242433;margin-top:8px}
+.analytics-icon{display:grid;place-items:center;width:42px;height:42px;background:#f0eaff;color:#6925e8;border-radius:12px}
+.analytics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.analytics-wide{grid-column:1/-1}
+.analytics-card h2{font-size:15px;color:#343442;font-weight:700;margin:0 0 12px}
+.analytics-chart{height:280px;width:100%}
+.analytics-wide .analytics-chart{height:320px}
+@media(min-width:1500px){.analytics-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.analytics-wide{grid-column:span 4}}
+@media(max-width:900px){.analytics-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.analytics-wrap{padding:14px}.analytics-grid{grid-template-columns:1fr}.analytics-wide{grid-column:auto}.analytics-card{padding:12px}.analytics-chart{height:260px}.analytics-heading{gap:12px}}
 </style>
