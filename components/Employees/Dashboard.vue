@@ -28,14 +28,14 @@ import * as echarts from "echarts";
 import Loading from "@/components/LoadingOverlay/Loadings";
 
 const palette = [
-  "#287b68",
-  "#b8f7e4",
-  "#65c9ae",
-  "#d9f9ef",
-  "#409b86",
-  "#7baca0",
-  "#a4dfce",
-  "#e7faf4",
+  "#34539b",
+  "#d6ff3d",
+  "#34539b",
+  "#e5ebfa",
+  "#5676bd",
+  "#8198cd",
+  "#c2df39",
+  "#edf1fb",
 ];
 
 export default {
@@ -398,10 +398,10 @@ export default {
         textStyle: { fontFamily: "Segoe UI, Arial, sans-serif" },
         tooltip: {
           backgroundColor: "#fff",
-          borderColor: "#dcece5",
+          borderColor: "#dce4f5",
           borderWidth: 1,
           padding: [10, 14],
-          textStyle: { color: "#25272c", fontSize: 12 },
+          textStyle: { color: "#243451", fontSize: 12 },
           extraCssText:
             "box-shadow:0 10px 30px rgba(15,64,120,.12);border-radius:10px;",
         },
@@ -445,14 +445,14 @@ export default {
       const types = Object.keys(map).sort((a,b)=>map[b]-map[a]);
       const bar = (ref, labels, values, color, horizontal=false) => {
         const chart=this.initChart(ref); if(!chart)return;
-        const category={type:"category",data:labels,axisTick:{show:false},axisLabel:{color:"#687771",interval:0,overflow:"truncate",width:100},axisLine:{lineStyle:{color:"#e1ebe6"}}};
-        const value={type:"value",minInterval:1,splitLine:{lineStyle:{color:"#e1ebe6"}}};
+        const category={type:"category",data:labels,axisTick:{show:false},axisLabel:{color:"#64748b",interval:0,overflow:"truncate",width:100},axisLine:{lineStyle:{color:"#e1e6f0"}}};
+        const value={type:"value",minInterval:1,splitLine:{lineStyle:{color:"#e1e6f0"}}};
         chart.setOption({...this.chartBaseOption(),tooltip:{trigger:"axis",axisPointer:{type:"shadow"}},grid:{left:12,right:24,top:20,bottom:12,containLabel:true},xAxis:horizontal?value:category,yAxis:horizontal?{...category,inverse:true}:value,series:[{type:"bar",data:values,barMaxWidth:36,itemStyle:{color,borderRadius:horizontal?[0,5,5,0]:[5,5,0,0]}}]});
       };
-      bar("ageChart",groups,counts,"#287b68");
-      bar("typeChart",types,types.map(k=>map[k]),"#409b86",true);
+      bar("ageChart",groups,counts,"#34539b");
+      bar("typeChart",types,types.map(k=>map[k]),"#5676bd",true);
       const chart=this.initChart("birthdayChart");
-      if(chart)chart.setOption({...this.chartBaseOption(),tooltip:{trigger:"axis"},grid:{left:12,right:20,top:20,bottom:12,containLabel:true},xAxis:{type:"category",data:months,axisLabel:{color:"#687771"}},yAxis:{type:"value",minInterval:1,splitLine:{lineStyle:{color:"#e1ebe6"}}},series:[{type:"line",data:birthdays,smooth:true,symbolSize:6,lineStyle:{color:"#287b68",width:3},itemStyle:{color:"#287b68"},areaStyle:{color:"#d9f9ef"}}]});
+      if(chart)chart.setOption({...this.chartBaseOption(),tooltip:{trigger:"axis"},grid:{left:12,right:20,top:20,bottom:12,containLabel:true},xAxis:{type:"category",data:months,axisLabel:{color:"#64748b"}},yAxis:{type:"value",minInterval:1,splitLine:{lineStyle:{color:"#e1e6f0"}}},series:[{type:"line",data:birthdays,smooth:true,symbolSize:6,lineStyle:{color:"#34539b",width:3},itemStyle:{color:"#34539b"},areaStyle:{color:"#e5ebfa"}}]});
     },
     buildStatusChart() {
       const map = this.countBy(
@@ -476,7 +476,7 @@ export default {
           bottom: 8,
           left: "center",
           width: "90%",
-          textStyle: { fontSize: 11, color: "#687771", fontWeight: 600 },
+          textStyle: { fontSize: 11, color: "#64748b", fontWeight: 600 },
           icon: "circle",
           itemWidth: 8,
           itemHeight: 8,
@@ -493,7 +493,7 @@ export default {
               formatter: "{d}%",
               fontSize: 11,
               fontWeight: 800,
-              color: "#34383c",
+              color: "#34486b",
             },
             labelLine: {
               length: 8,
@@ -507,7 +507,7 @@ export default {
                 show: true,
                 fontSize: 14,
                 fontWeight: 800,
-                color: "#287b68",
+                color: "#34539b",
               },
             },
             data: keys.map((k, i) => ({
@@ -529,7 +529,7 @@ export default {
                 top: -10,
                 style: {
                   text: `${total}`,
-                  fill: "#25272c",
+                  fill: "#243451",
                   fontSize: 30,
                   fontWeight: 800,
                   textAlign: "center",
@@ -541,7 +541,7 @@ export default {
                 top: 25,
                 style: {
                   text: "EMPLOYEES",
-                  fill: "#87958f",
+                  fill: "#8492a9",
                   fontSize: 9,
                   fontWeight: 700,
                   textAlign: "center",
@@ -612,7 +612,7 @@ export default {
               value: map[k],
               itemStyle: {
                 color:
-                  ["#287b68", "#bda3ff", "#efe8ff"][i] ||
+                  ["#34539b", "#bda3ff", "#efe8ff"][i] ||
                   palette[i % palette.length],
               },
             })),
@@ -715,7 +715,7 @@ export default {
             data: vals.map((v, i) => ({
               value: v,
               itemStyle: {
-                color: i % 2 ? "#d9f9ef" : "#65c9ae",
+                color: i % 2 ? "#e5ebfa" : "#34539b",
                 barBorderRadius: [5, 5, 0, 0],
               },
             })),
@@ -737,8 +737,8 @@ export default {
 };
 </script>
 <style scoped>
-.hr-reference-final{position:static!important;inset:auto!important;transform:none!important;width:100%!important;max-width:none!important;height:auto!important;max-height:none!important;overflow:visible!important;background:#f3f7f5!important}
-.ref-workspace{width:100%;padding:24px;box-sizing:border-box;color:#25272c;font-family:font_R,"Segoe UI",sans-serif}
+.hr-reference-final{position:static!important;inset:auto!important;transform:none!important;width:100%!important;max-width:none!important;height:auto!important;max-height:none!important;overflow:visible!important;background:#f3f5fa!important}
+.ref-workspace{width:100%;padding:24px;box-sizing:border-box;color:#243451;font-family:font_R,"Segoe UI",sans-serif}
 .ref-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
 .ref-heading h1{font-size:24px;font-weight:750;margin:0}
 .ref-search{display:flex;align-items:center;gap:10px;background:#fff;border-radius:24px;padding:9px 16px;width: min(45%,460px);color:#9693a5;margin:0}
@@ -753,16 +753,16 @@ export default {
 .ref-kpi strong{font-size:30px;line-height:1.15}
 .ref-card h2{font-size:16px;font-weight:750;margin:0 0 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .ref-chart{height:240px;width:100%}
-.ref-summary-row{display:flex;align-items:center;gap:10px;padding:15px 0;border-bottom:1px solid #eaf3ef;font-size:12px}
+.ref-summary-row{display:flex;align-items:center;gap:10px;padding:15px 0;border-bottom:1px solid #edf1f8;font-size:12px}
 .ref-summary-row:last-child{border:0}
 .ref-summary-row svg{color:#9898a8}
 .ref-summary-row strong{margin-left:auto;font-size:14px}
-.ref-count{font-size:12px;color:#287b68;background:#e0f9f0;padding:4px 9px;border-radius:12px}
+.ref-count{font-size:12px;color:#34539b;background:#edf1fb;padding:4px 9px;border-radius:12px}
 .ref-list{max-height:240px;overflow:auto}
 .ref-list table{width:100%;border-collapse:collapse;font-size:12px;text-align:left}
 .ref-list th{color:#858596;font-weight:500;padding:10px 6px}
-.ref-list td{padding:10px 6px;border-top:1px solid #eaf3ef}
-.ref-avatar{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#e0f9f0;color:#287b68;margin-right:8px;font-weight:700}
+.ref-list td{padding:10px 6px;border-top:1px solid #edf1f8}
+.ref-avatar{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#edf1fb;color:#34539b;margin-right:8px;font-weight:700}
 .ref-empty{padding:40px 0;text-align:center;color:#858596;font-size:13px}
 @media(max-width:1100px){.ref-middle{grid-template-columns:repeat(2,minmax(0,1fr))}.ref-middle>article:nth-child(2){grid-column:span 1}.ref-summary{grid-column:1/-1}}
 @media(max-width:650px){.ref-workspace{padding:14px}.ref-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ref-middle,.ref-pairs{grid-template-columns:1fr}.ref-heading{flex-wrap:wrap}.ref-search{width:100%}.ref-card{padding:16px}.ref-chart{height:250px}}
@@ -770,7 +770,8 @@ export default {
 .ref-kpi .ref-trend{font-size:12px;font-weight:700;white-space:nowrap}
 .ref-trend.higher{color:#00a889}.ref-trend.lower{color:#e34b55}.ref-trend.neutral{color:#9693a5}
 .ref-trend-caption{font-size:10px;color:#9693a5}
-.ref-age{display:inline-block;padding:3px 8px;background:#e0f9f0;color:#287b68;border-radius:8px;font-weight:700}
-.ref-refresh{margin-left:auto;border:1px solid #dcece5;background:white;color:#287b68;border-radius:20px;padding:8px 14px;font-size:12px;white-space:nowrap}.ref-refresh:disabled{opacity:.5}
-.ref-refresh,.ref-count,.ref-age{background:#b8f7e4;color:#25272c;border-color:#a4dfce}.ref-card{border:1px solid #e1ebe6}
+.ref-age{display:inline-block;padding:3px 8px;background:#edf1fb;color:#34539b;border-radius:8px;font-weight:700}
+.ref-refresh{margin-left:auto;border:1px solid #dce4f5;background:white;color:#34539b;border-radius:20px;padding:8px 14px;font-size:12px;white-space:nowrap}.ref-refresh:disabled{opacity:.5}
+.ref-refresh,.ref-count,.ref-age{background:#d6ff3d;color:#243451;border-color:#c2df39}.ref-card{border:1px solid #e1e6f0}
+.ref-card{background:#fffafa}.ref-refresh{background:#34539b;color:#fffafa;border-color:#34539b}.ref-count,.ref-age{background:#d6ff3d;color:#243451}
 </style>
