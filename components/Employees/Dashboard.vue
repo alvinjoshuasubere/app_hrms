@@ -2,9 +2,9 @@
   <div class="dashboard hr-dashboard hr-reference-final">
     <Loading v-if="loading"/>
     <div class="ref-workspace">
-      <header class="ref-heading"><h1>Dashboard</h1><label class="ref-search"><font-awesome-icon icon="magnifying-glass"/><input v-model="search" placeholder="Search birthday or retirement records" aria-label="Search birthday or retirement records"/></label></header>
+      <header class="ref-heading"><h1>Dashboard</h1><button type="button" class="ref-refresh" @click="fetchData" :disabled="loading"><font-awesome-icon icon="sync-alt"/> Refresh data</button><label class="ref-search"><font-awesome-icon icon="magnifying-glass"/><input v-model="search" placeholder="Search birthday or retirement records" aria-label="Search birthday or retirement records"/></label></header>
       <section class="ref-kpis">
-        <article v-for="item in kpiItems" :key="item.key" class="ref-card ref-kpi"><span>{{item.label}}</span><div class="ref-kpi-value"><strong>{{item.value}}</strong><span class="ref-trend" :class="trendClass(item.key)" :title="comparisonDate ? 'Compared with '+comparisonDate : 'No previous daily snapshot'"><span v-if="trend(item.key) !== null">{{trend(item.key)>0?'↗ +':trend(item.key)<0?'↘ ':'→ '}}{{trend(item.key).toFixed(1)}}%</span><span v-else>—</span></span></div><small class="ref-trend-caption">{{comparisonDate ? 'vs '+comparisonDate : 'No prior comparison'}}</small></article>
+        <article v-for="item in kpiItems" :key="item.key" class="ref-card ref-kpi"><span>{{item.label}}</span><div class="ref-kpi-value"><strong>{{item.value}}</strong><span class="ref-trend" :class="trendClass(item.key)" :title="comparisonDate ? 'Compared with '+comparisonDate : 'No previous data snapshot'"><span v-if="trend(item.key) !== null">{{trend(item.key)>0?'↗ +':trend(item.key)<0?'↘ ':'→ '}}{{trend(item.key).toFixed(1)}}%</span><span v-else>{{trendFromZero(item.key) ? "New" : "—"}}</span></span></div><small class="ref-trend-caption">{{comparisonDate ? 'vs '+comparisonDate : 'No prior comparison'}}</small></article>
       </section>
       <section class="ref-middle">
         <article class="ref-card"><h2>Employment status</h2><div class="ref-chart" ref="statusChart"></div></article>
@@ -241,23 +241,31 @@ export default {
       if (!Number.isFinite(previous) || previous===0) return previous===0 && current===0 ? 0 : null;
       return (current-previous)/previous*100;
     },
+    trendFromZero(key) {
+      return !this.fetchFailed && this.previousSnapshot && this.previousSnapshot.values[key]===0 && this.kpiItems.find(i=>i.key===key).value>0;
+    },
     trendClass(key) {
+      if(this.trendFromZero(key)) return "higher";
       const n=this.trend(key);
       return n===null || n===0 ? "neutral" : n>0 ? "higher" : "lower";
     },
-    saveDailySnapshot() {
+    saveComparisonSnapshot() {
       if (this.fetchFailed) return;
       try {
-        const now=new Date();
-        const date=[now.getFullYear(),String(now.getMonth()+1).padStart(2,"0"),String(now.getDate()).padStart(2,"0")].join("-");
         const key="hrms-dashboard-daily-v1";
         const stored=JSON.parse(localStorage.getItem(key)||"{}");
-        const prior=Object.keys(stored).filter(d=>d<date).sort().pop();
-        this.previousSnapshot=prior ? {values:stored[prior]} : null;
-        this.comparisonDate=prior || "";
-        stored[date]=this.kpiItems.reduce((o,i)=>{o[i.key]=i.value;return o;},{});
-        Object.keys(stored).sort().slice(0,-31).forEach(d=>delete stored[d]);
-        localStorage.setItem(key,JSON.stringify(stored));
+        const values=this.kpiItems.reduce((o,i)=>{o[i.key]=i.value;return o;},{});
+        let latest=stored.latest;
+        if(!latest) {
+          const prior=Object.keys(stored).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort().pop();
+          if(prior) latest={values:stored[prior],at:prior};
+        }
+        const changed=latest && Object.keys(values).some(k=>values[k]!==latest.values[k]);
+        const baseline=changed ? latest : stored.baseline || null;
+        const current=(!latest || changed) ? {values,at:new Date().toISOString()} : latest;
+        this.previousSnapshot=baseline;
+        this.comparisonDate=baseline ? new Date(baseline.at).toLocaleString() : "";
+        localStorage.setItem(key,JSON.stringify({latest:current,baseline}));
       } catch(e) { this.previousSnapshot=null; this.comparisonDate=""; }
     },
     filterPeople(rows) {
@@ -285,7 +293,7 @@ export default {
         await Promise.all([this.fetchEmployees(), this.fetchDepartments()]);
         this.$nextTick(() => {
           this.processBirthdays();
-          this.saveDailySnapshot();
+          this.saveComparisonSnapshot();
           this.buildCharts();
         });
       } catch (e) {
@@ -307,7 +315,7 @@ export default {
           this.employees = payload.data;
         else if (payload && Array.isArray(payload.items))
           this.employees = payload.items;
-        else this.employees = [];
+        else { this.fetchFailed = true; this.employees = []; }
       } catch (e) {
         this.fetchFailed = true;
         console.error("Error fetching employees:", e);
@@ -320,7 +328,11 @@ export default {
           method: "GET",
           url: `${this.$axios.defaults.baseURL}/file-maintenance/department/get-all`,
         });
-        this.departments = res.data || [];
+        const payload=res.data;
+        if(Array.isArray(payload)) this.departments=payload;
+        else if(payload && Array.isArray(payload.data)) this.departments=payload.data;
+        else if(payload && Array.isArray(payload.items)) this.departments=payload.items;
+        else {this.fetchFailed=true;this.departments=[];}
       } catch (e) {
         this.fetchFailed = true;
         console.error("Error fetching departments:", e);
@@ -759,4 +771,5 @@ export default {
 .ref-trend.higher{color:#00a889}.ref-trend.lower{color:#e34b55}.ref-trend.neutral{color:#9693a5}
 .ref-trend-caption{font-size:10px;color:#9693a5}
 .ref-age{display:inline-block;padding:3px 8px;background:#f0eaff;color:#6925e8;border-radius:8px;font-weight:700}
+.ref-refresh{margin-left:auto;border:1px solid #e9e3f3;background:white;color:#6925e8;border-radius:20px;padding:8px 14px;font-size:12px;white-space:nowrap}.ref-refresh:disabled{opacity:.5}
 </style>
