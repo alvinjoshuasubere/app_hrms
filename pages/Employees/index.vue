@@ -1,6 +1,7 @@
 <template>
-  <div class="body">
-    <main>
+  <div class="hr-inner-page">
+    <header class="hr-inner-heading"><h1>Employees</h1><p>Manage employee records and workforce information.</p></header>
+    <main class="hr-inner-content">
       <EmployeeTable />
     </main>
   </div>
