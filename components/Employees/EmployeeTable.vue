@@ -503,7 +503,7 @@
 
       <div v-if="employeeDetails" class="emp-staff-modal text-left">
         <!-- Summary card (hrment-style) -->
-        <div class="emp-staff-summary-card">
+        <div class="emp-profile-columns"><aside class="emp-staff-summary-card"><div class="emp-profile-cover"></div>
           <div class="emp-staff-summary-avatar-wrapper">
             <div class="emp-staff-summary-avatar">
               <img
@@ -548,7 +548,7 @@
               {{ !employeeDetails.isseparated ? "Active" : "Separated" }}
             </span>
           </div>
-          <div class="emp-staff-summary-meta">
+          <div class="emp-staff-summary-meta"><h3>Basic Information</h3>
             <div class="emp-staff-meta-grid">
               <div class="emp-staff-meta-block">
                 <span class="emp-staff-meta-label">Employee ID</span>
@@ -569,11 +569,10 @@
                   employeeDetails.email || "—"
                 }}</span>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="profileImagePreviewUrl" class="profile-crop-section">
+<div class="emp-staff-meta-block"><span class="emp-staff-meta-label">Gender</span><span class="emp-staff-meta-value">{{employeeDetails.genderdesc || "—"}}</span></div>
+<div class="emp-staff-meta-block"><span class="emp-staff-meta-label">Citizenship</span><span class="emp-staff-meta-value">{{employeeDetails.citizenshipdesc || "—"}}</span></div>
+<div class="emp-staff-meta-block"><span class="emp-staff-meta-label">Age</span><span class="emp-staff-meta-value">{{getAge(employeeDetails.birthdate)}}</span></div>
+</div></div></aside><section class="emp-profile-content"><div v-if="profileImagePreviewUrl" class="profile-crop-section">
           <b-alert
             :show="profileImageAlert.dismissCountDown"
             dismissible
@@ -929,6 +928,7 @@
           </div>
         </div>
 
+        </section></div>
         <!-- ── Footer ── -->
         <div class="emp-footer emp-footer--split">
           <b-button
@@ -5009,4 +5009,32 @@ img{
 .emp-staff-modal-root button:focus-visible{outline:2px solid #34539b;outline-offset:2px}
 @media(max-width:800px){.emp-staff-modal-root .emp-staff-summary-card{grid-template-columns:76px minmax(0,1fr)}.emp-staff-modal-root .emp-staff-summary-meta{grid-column:1/-1}.emp-staff-modal-root .emp-staff-layout{grid-template-columns:1fr}.emp-staff-modal-root .emp-staff-kv-grid--wide{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.emp-staff-modal-root .emp-staff-modal-dialog{width:calc(100% - 16px)!important}.emp-staff-modal-root .emp-staff-modal{padding:12px!important}.emp-staff-modal-root .emp-staff-summary-card{padding:12px!important;gap:10px!important}.emp-staff-modal-root .emp-staff-summary-name{font-size:18px!important}.emp-staff-modal-root .emp-staff-meta-grid,.emp-staff-modal-root .emp-staff-kv-grid,.emp-staff-modal-root .emp-staff-kv-grid--wide{grid-template-columns:1fr}}
+</style>
+<style>
+.emp-staff-modal-root .emp-staff-modal-dialog{max-width:1280px!important}
+.emp-staff-modal-root .emp-profile-columns{display:grid;grid-template-columns:minmax(250px, .85fr) minmax(0,1.55fr);gap:18px;align-items:start}
+.emp-staff-modal-root .emp-profile-content{min-width:0}
+.emp-staff-modal-root .emp-staff-summary-card{display:flex!important;flex-direction:column;align-items:stretch!important;gap:0!important;padding:0!important;overflow:hidden}
+.emp-staff-modal-root .emp-profile-cover{height:132px;background:repeating-linear-gradient(125deg,transparent 0 20px,rgba(255,255,255,.13) 20px 23px),linear-gradient(125deg,#34539b,#8198cd)}
+.emp-staff-modal-root .emp-staff-summary-avatar-wrapper{margin:-46px 0 12px 22px!important;width:92px;height:92px}
+.emp-staff-modal-root .emp-staff-summary-avatar{width:92px!important;height:92px!important;border:4px solid #fff!important;box-shadow:0 3px 10px #24345120}
+.emp-staff-modal-root .emp-staff-summary-main{padding:0 22px 18px!important}
+.emp-staff-modal-root .emp-staff-summary-meta{padding:0 22px 24px!important}
+.emp-staff-modal-root .emp-staff-summary-meta h3{font-size:16px;font-weight:650;margin:0 0 16px;color:#243451}
+.emp-staff-modal-root .emp-staff-meta-grid{grid-template-columns:1fr!important;gap:15px!important}
+.emp-staff-modal-root .emp-staff-meta-block{border-left:3px solid #e1e6f0;padding-left:12px}
+.emp-staff-modal-root .emp-staff-tabs{background:transparent!important;border:0!important;padding:0!important}
+.emp-staff-modal-root .emp-staff-tab{border-radius:24px!important;flex:0 0 auto}
+.emp-staff-modal-root .emp-staff-tab--active{box-shadow:none!important;background:#34539b!important;border:1px solid #d6ff3d!important}
+.emp-staff-modal-root .emp-staff-layout{grid-template-columns:1fr!important}
+.emp-staff-modal-root .emp-staff-card{border-radius:16px!important;overflow:hidden}
+.emp-staff-modal-root .emp-staff-card-head{background:#edf1fb!important;padding:16px 20px!important}
+.emp-staff-modal-root .emp-staff-card-body{padding:6px 20px 12px!important}
+.emp-staff-modal-root .emp-staff-kv-grid,.emp-staff-modal-root .emp-staff-card-body--stack{grid-template-columns:1fr!important;gap:0!important}
+.emp-staff-modal-root .emp-staff-kv,.emp-staff-modal-root .emp-staff-kv-full{display:grid!important;grid-template-columns:minmax(110px, .9fr) minmax(0,1.1fr);gap:12px;padding:12px 0!important;margin:0!important;border:0;border-bottom:1px solid #e1e6f0;align-items:start}
+.emp-staff-modal-root .emp-staff-kv-label{font-size:13px!important;color:#52627c!important}
+.emp-staff-modal-root .emp-staff-kv-value{font-weight:500!important}
+.emp-staff-modal-root .signature-detail-wrapper{grid-column:1/-1}
+@media(max-width:800px){.emp-staff-modal-root .emp-profile-columns{grid-template-columns:1fr}.emp-staff-modal-root .emp-staff-meta-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:480px){.emp-staff-modal-root .emp-staff-meta-grid{grid-template-columns:1fr!important}.emp-staff-modal-root .emp-staff-kv,.emp-staff-modal-root .emp-staff-kv-full{grid-template-columns:1fr;gap:3px}}
 </style>
