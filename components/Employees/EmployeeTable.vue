@@ -3456,16 +3456,7 @@ img{
       }
     },
     async fetchEmployees(force = false) {
-      const cacheKey = `employees:${this.selectedStatus}`;
-      if (force && this._employeesCache) {
-        delete this._employeesCache[cacheKey];
-      }
-      if (!force && this._employeesCache && this._employeesCache[cacheKey]) {
-        this.employees = this._employeesCache[cacheKey];
-        this.totalRows = this.employees.length;
-        return;
-      }
-      this.showLoading = true;
+      this.showLoading = !this.employees.length;
       try {
         const params = {
           text: "",
@@ -3483,7 +3474,7 @@ img{
           url: `${this.$axios.defaults.baseURL}/employees/get-all`,
           params: params,
         });
-        console.log(res.data);
+
         const payload = res.data;
 
         if (Array.isArray(payload)) {
@@ -3512,10 +3503,7 @@ img{
           this.totalRows = this.employees.length;
         }
 
-        if (this.employees.length > 0) {
-          if (!this._employeesCache) this._employeesCache = {};
-          this._employeesCache[cacheKey] = this.employees;
-        }
+
       } catch (e) {
         this.employees = [];
         this.totalRows = 0;
