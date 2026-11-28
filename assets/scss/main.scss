@@ -22,13 +22,13 @@
 @font-face { font-family: Tahoma; src: url("~/assets/fonts/Tahoma.ttf"); }
 
 :root {
-  --primary-color: #4f46e5; --primary-hover: #4338ca; --primary-light: #e0e7ff; --transPrimary: #4f46e5b3;
+  --primary-color: #1d4ed8; --primary-hover: #1e40af; --primary-light: #dbeafe; --transPrimary: #1d4ed8b3;
   --secondary-color: #f9fafb; --accent-color: #10b981; --accent-light: #d1fae5;
   --white-color: #ffffff; --black-color: #111827;
   --gray-50:#f9fafb; --gray-100:#f3f4f6; --gray-200:#e5e7eb; --gray-300:#d1d5db; --gray-400:#9ca3af;
   --gray-500:#6b7280; --gray-600:#4b5563; --gray-700:#374151; --gray-800:#1f2937; --gray-900:#111827;
   --text-primary:#111827; --text-secondary:#6b7280; --text-light:#9ca3af;
-  --border-color:#e5e7eb; --border-light:#f3f4f6; --border-focus:#4f46e5;
+  --border-color:#e5e7eb; --border-light:#f3f4f6; --border-focus:#1d4ed8;
   --bg-primary:#ffffff; --bg-secondary:#f9fafb; --bg-tertiary:#f3f4f6;
   --success-color:#10b981; --success-light:#d1fae5; --warning-color:#f59e0b; --warning-light:#fef3c7;
   --danger-color:#ef4444; --danger-light:#fee2e2; --info-color:#3b82f6; --info-light:#dbeafe;
@@ -57,3 +57,19 @@ body { font-family:Tahoma; background-color:white; color:var(--text-primary); li
 @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 .slide-up { animation:slideUp .3s ease-out; }
 @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+/* Shared HRMS dialog theme, including dialogs portalled to body. */
+body .modal .modal-content{background:#fff!important;color:#000!important;border:1px solid #e2e8f0!important;border-radius:14px!important;box-shadow:0 20px 60px rgba(15,23,42,.18)!important;overflow:hidden}
+body .modal .modal-header{background:#eff6ff!important;color:#000!important;border-bottom:1px solid #dbeafe!important;padding:16px 22px!important;align-items:center}
+body .modal .modal-header .modal-title,body .modal .modal-header .modal-title *,body .modal .modal-header .close{color:#000!important}
+body .modal .modal-header .close{opacity:.8;text-shadow:none}
+body .modal .modal-body{background:#fff!important;color:#000!important}
+body .modal .modal-footer{background:#f8fafc!important;border-top:1px solid #e2e8f0!important;padding:12px 22px!important}
+body .modal .form-control,body .modal .custom-select{color:#000!important;border-color:#cbd5e1!important}
+body .modal .btn-primary{background:#1d4ed8!important;border-color:#1d4ed8!important;color:#fff!important}
+body .modal .btn-outline-primary{color:#1d4ed8!important;border-color:#1d4ed8!important}
+body .modal .btn-outline-primary:hover{background:#1d4ed8!important;color:#fff!important}
+body .modal .card-header{background:#eff6ff;color:#000;border-color:#e2e8f0}
+body .modal .nav-tabs .nav-link{color:#000!important}
+body .modal .nav-tabs .nav-link.active{background:#dbeafe!important;color:#000!important;border-color:#93c5fd!important}
+body .modal-backdrop{background:#0f172a}
