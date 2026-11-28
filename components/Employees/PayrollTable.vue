@@ -646,7 +646,7 @@ export default {
         );
 
         this.employees = Array.isArray(res.data) ? res.data : [];
-        console.log(this.employees);
+
       } catch (error) {
         console.error("Error fetching payroll data:", error);
       } finally {
