@@ -3456,7 +3456,8 @@ img{
       }
     },
     async fetchEmployees(force = false) {
-      this.showLoading = !this.employees.length;
+      const requestId = this._employeeRequestId = (this._employeeRequestId || 0) + 1;
+      this.showLoading = true;
       try {
         const params = {
           text: "",
@@ -3475,6 +3476,7 @@ img{
           params: params,
         });
 
+        if (requestId !== this._employeeRequestId) return;
         const payload = res.data;
 
         if (Array.isArray(payload)) {
@@ -3505,10 +3507,11 @@ img{
 
 
       } catch (e) {
+        if (requestId !== this._employeeRequestId) return;
         this.employees = [];
         this.totalRows = 0;
       } finally {
-        this.showLoading = false;
+        if (requestId === this._employeeRequestId) this.showLoading = false;
       }
     },
     // Reference data fetch functions
