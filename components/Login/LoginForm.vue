@@ -4,9 +4,9 @@
     <!-- ── LEFT PANEL — white with illustration ── -->
     <div class="left-panel">
       <div class="illustration-wrap">
-        <img class="vectorImage" src="office.jpg" alt="">
+        <img class="vectorImage" src="/office.jpg" alt="">
         <div class="illustration-label">
-          <span >Employee ID System</span>
+          <span>Human Resource Management System</span>
           <span class="illustration-sub">City Government of Koronadal</span>
         </div>
       </div>
@@ -38,40 +38,40 @@
         <!-- Logo + title -->
         <div class="card-header">
           <img src="/city_logo.png" alt="City Logo" class="card-logo" align="center" />
-          <h1 class="card-title">Hello!</h1>
-          <p class="card-subtitle">Sign in to access the system</p>
+          <h1 class="card-title">Welcome back</h1>
+          <p class="card-subtitle">Sign in to your HRMS account.</p>
         </div>
 
         <!-- Form -->
         <form @submit.prevent="login" class="card-form">
 
+          <label class="login-field-label" for="hr-login-user">Username</label>
           <div class="field-wrap">
             <font-awesome-icon icon="user" class="field-icon" />
             <b-input
-              v-model="user.username"
+              id="hr-login-user" autocomplete="username" v-model="user.username"
               type="text"
               placeholder="Username"
               required
               class="field-input"
-              @keyup.enter="login"
             />
           </div>
 
+          <label class="login-field-label" for="hr-login-password">Password</label>
           <div class="field-wrap">
             <font-awesome-icon icon="lock" class="field-icon" />
             <b-input
-              v-model="user.password"
+              id="hr-login-password" autocomplete="current-password" v-model="user.password"
               type="password"
               placeholder="Password"
               required
               class="field-input"
-              @keyup.enter="login"
             />
           </div>
 
           <button type="submit" class="login-btn" :disabled="showLoading">
             <font-awesome-icon v-if="showLoading" icon="spinner" spin class="mr-2" />
-            {{ showLoading ? 'Authenticating...' : 'Login' }}
+            {{ showLoading ? 'Authenticating...' : 'Sign in' }}
           </button>
 
         </form>
@@ -181,4 +181,25 @@ export default {
 </script>
 
 <style>
+.login-page{min-height:100vh;min-height:100dvh;height:auto!important;width:100%!important;overflow:visible!important;background:#f8fafc;font-family:Inter,Arial,sans-serif}
+.login-page .left-panel{flex:1 1 50%;min-width:0;background:linear-gradient(145deg,#0f172a,#1e3a8a);padding:64px 48px 90px;min-height:100vh}
+.login-page .illustration-wrap{width:100%;max-width:520px;gap:28px}
+.login-page .vectorImage{width:100%;max-width:420px;max-height:300px;object-fit:cover;border-radius:16px;border:1px solid #93c5fd}
+.login-page .illustration-label span:first-child{font-size:clamp(26px,3vw,42px);line-height:1.2;color:#fff;font-weight:700}
+.login-page .illustration-sub,.login-page .copyright-text,.login-page .dev-icon{color:#dbeafe}
+.login-page .left-footer{left:24px;right:24px;gap:12px;text-align:center}
+.login-page .right-panel{flex:1 1 50%;width:auto;background:#f8fafc;border-radius:0;padding:48px 28px;min-width:0}
+.login-page .login-card{max-width:440px;border:1px solid #e2e8f0;border-radius:18px;box-shadow:0 12px 40px rgba(15,23,42,.08);padding:36px}
+.login-page .card-header{background:transparent;border:0;padding:0;margin-bottom:28px;text-align:left}
+.login-page .card-logo{height:72px;margin:0 0 24px}
+.login-page .card-title{color:#000;font-size:30px;line-height:1.2}
+.login-page .card-subtitle{color:#475569}
+.login-page .card-form{gap:10px}
+.login-page .login-field-label{color:#000;font-size:13px;font-weight:600;margin:0}
+.login-page .field-wrap{margin-bottom:8px}
+.login-page .field-input{background:#fff!important;color:#000!important;border-radius:8px!important}
+.login-page .field-icon{color:#475569}
+.login-page .login-btn{border-radius:8px;background:#1d4ed8;margin-top:8px}
+.login-page .updates-popup{top:auto;bottom:calc(100% + 8px)}
+@media(max-width:900px){.login-page .left-panel{min-height:auto;padding:32px 24px 64px}.login-page .vectorImage{display:none}.login-page .illustration-label span:first-child{font-size:25px}.login-page .right-panel{width:100%;padding:28px 16px;flex:1}.login-page .login-card{padding:28px 24px}.login-page .left-footer{bottom:12px}}
 </style>
